@@ -1,0 +1,383 @@
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
+</head>
+
+<body>
+
+  <div class="chart-container" style="width: 100%; height:100%;"></div>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+
+  <script>
+    var chart;
+    d3.csv(
+      './data/OKRs-Sync.csv'
+    ).then(okrs => {
+
+      // okrs.sort(function (a, b) {
+      //     return a["OKR-ID"] - b["OKR-ID"];
+      //   });
+
+      d3.csv(
+        './data/OKRs-teams.csv'
+      ).then(teams => {
+        chart = new d3.OrgChart()
+          .container('.chart-container')
+          .data(teams)
+          // .nodeHeight((d) => 200)
+          .nodeHeight((d) => {
+            height = 200
+            var teamOkrs = okrs.filter(okr => okr["Team.lookupId"] == d.data.id);
+            minOKRs = 9;
+            if (teamOkrs.length > minOKRs) {
+              height = height + (teamOkrs.length - minOKRs) * 20;
+            }
+            return height;
+            // return d.data.id < 5 ? 200 : 200 + (d.data.id * 10);
+          })
+          .nodeWidth((d) => {
+            //if (d.depth == 0) return 400;
+            return 600;
+          })
+          .childrenMargin((d) => 90)
+          .compactMarginBetween((d) => 65)
+          .compactMarginPair((d) => 100)
+          .neightbourMargin((a, b) => 50)
+          .siblingsMargin((d) => 100)
+          .buttonContent(({ node, state }) => {
+            return `<div style="color:#333333;border-radius:5px;padding:4px 8px;font-size:10px;margin:auto auto;background-color:#fcfcfc;border: 1px solid #222222"> <span style="font-size:9px">${node.children
+              ? `<i class="fas fa-angle-up"></i>`
+              : `<i class="fas fa-angle-down"></i>`
+              }</span> ${node.data._directSubordinates}  </div>`;
+          })
+          .linkUpdate(function (d, i, arr) {
+            d3.select(this)
+              .attr('stroke', (d) =>
+                d.data._upToTheRootHighlighted ? '#14760D' : '#666666'
+              )
+              .attr('stroke-width', (d) =>
+                d.data._upToTheRootHighlighted ? 15 : 1
+              );
+
+            if (d.data._upToTheRootHighlighted) {
+              d3.select(this).raise();
+            }
+          })
+          .nodeContent(function (d, i, arr, state) {
+
+            var teamOkrs = okrs.filter(okr => okr["Team.lookupId"] == d.data.id);
+
+            teamOkrs.sort((a, b) => { return a["#"] - b["#"]; });
+
+            var teamOkrsText = []
+            teamOkrs.forEach(okr => {
+              console.log(okr);
+
+              if (okr.Category == 'Obj') {
+                teamOkrsText.push(`
+                  <div class="okr-obj">
+                  <span class="okr-obj-id">${okr["Category"]} ${okr["#"]} - </span>
+                  <span class="okr-obj-title">${okr.Title}</span>
+                  </div>
+                `)
+              } else {
+                teamOkrsText.push(`
+                  <div class="okr-kr">
+                    <span class="okr-kr-id">${okr["Category"]} ${okr["#"]}</span>
+                    <span class="okr-kr-sep">-&nbsp;</span>
+                    <span class="okr-kr-title">${okr.Title}</span>
+                  </div>`)
+              }
+            });
+
+            console.log(teamOkrsText.length)
+
+            return `                  
+                    <div class="okr" style="width:${d.width}px;height:${d.height}px">                    
+                      <div class="okr-content">
+                        <div style="font-size:15px;color:#333333;margin-top:24px"> ${d.data.Name} </div>
+                        ${teamOkrsText.join("")}
+                      </div>   
+                    </div>
+                    `;
+          })
+          .nodeUpdate(function (d, i, arr) {
+            d3.select(this)
+              .select('.node-rect')
+              .attr('stroke', (d) =>
+                d.data._highlighted || d.data._upToTheRootHighlighted
+                  ? '#14760D'
+                  : 'none'
+              )
+              .attr(
+                'stroke-width',
+                d.data._highlighted || d.data._upToTheRootHighlighted ? 40 : 1
+              );
+
+          })
+          .render();
+      });
+
+    });
+
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+
+
+  <script>
+    var index = 0;
+    var compact = 0;
+    var actNdCent = 0;
+  </script>
+
+
+  <style>
+    body {
+      background-color: #faf7f0;
+    }
+
+    .okr {
+      font-family: 'Inter', sans-serif;
+      background-color: #fcfcfc;
+      position: absolute;
+      margin-top: -1px;
+      margin-left: -1px;
+      border-radius: 4px;
+      border: 2px solid #939393
+    }
+
+    .okr-content {
+      color: #333333;
+      position: absolute;
+      left: 15px;
+      top: -20px;
+      margin: 0px 16px 0px 0px;
+    }
+
+    .okr-obj {
+      display: flex;
+      font-size: 10px;
+      font-weight: bold;
+      margin: 8px 0px 4px 0px;
+    }
+
+    .okr-obj-id {
+      /* display: inline-block; */
+      min-width: 35px;
+    }
+
+    .okr-obj-title {
+      /* display:inline-block; */
+    }
+
+    .okr-kr {
+      display: flex;
+      font-size: 10px;
+      padding-left: 15px;
+      margin: 3px 0px;
+    }
+
+    .okr-kr-id {
+      min-width: 37px;
+      display: inline-block;
+    }
+
+    .okr-kr-sep {
+      /* display:inline-block; */
+    }
+
+    .okr-kr-title {
+      /* display:inline-block; */
+    }
+
+
+    .svg-chart-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .btn {
+      margin: 3px;
+      color: inherit;
+      text-transform: uppercase;
+      word-wrap: break-word;
+      white-space: normal;
+      cursor: pointer;
+      border: 0;
+      border-radius: 0.125rem;
+      -webkit-box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%),
+        0 2px 10px 0 rgb(0 0 0 / 12%);
+      box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+      -webkit-transition: color 0.15s ease-in-out,
+        background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+        -webkit-box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+        -webkit-box-shadow 0.15s ease-in-out;
+      padding: 0.84rem 2.14rem;
+      font-size: 0.81rem;
+      display: inline-block;
+      font-weight: 400;
+      color: #212529;
+      text-align: center;
+      vertical-align: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      border: 1px solid transparent;
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 0.25rem;
+    }
+
+    .btn-action-button {
+      text-transform: lowercase;
+      font-size: 11px !important;
+      border-radius: 7px !important;
+      color: white !important;
+      padding: 4px 5px !important;
+      background-color: #1d2643 !important;
+    }
+
+    .action-buttons {
+      position: absolute;
+      bottom: 10px;
+      right: 35px;
+    }
+
+    .svg-chart-container:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, #04192b 0, #000b0e 100%);
+    }
+  </style>
+
+  <div class="action-buttons">
+
+    <!-- <button onclick='chart.setExpanded("1").render()' class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-chevron-down"></i> Expand
+    </button>
+    <br />
+
+    <button onclick='chart.setExpanded("1",false).render()' class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-chevron-up"></i> Collapse</button><br />
+
+    <button
+      onclick='chart.addNode({imageUrl:"https:\/\/raw.githubusercontent.com/bumbeishvili/Assets/master/Projects/D3/Organization%20Chart/cto.jpg",id:"root child",parentId:"O-6066",name:"test",progress:[25,20,15,10]})'
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-folder-plus"></i> Add Node
+    </button>
+    <br />
+
+    <button onclick='chart.removeNode("O-6067")' class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-user-times"></i> remove</button><br />
+-->
+    <button onclick="chart.fit()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-sync"></i> fit
+    </button>
+    <br />
+
+    <button onclick='chart.layout(["right","bottom","left","top"][index++%4]).render().fit()'
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-retweet"></i> swap
+    </button>
+    <br />
+
+    <button onclick="chart.compact(!!(compact++%2)).render().fit()"
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-sitemap"></i> compact
+    </button>
+    <br />
+
+    <!-- <button onclick="chart.setActiveNodeCentered(!!(actNdCent++%2)).render()"
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-border-none"></i> center Active
+    </button>
+    <br />
+
+    <button onclick='chart.setCentered("2").render()' class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-compress-arrows-alt"></i> center
+    </button>
+    <br /> -->
+
+    <!-- <button onclick='chart.setHighlighted("3").render()' class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-highlighter"></i> mark</button><br />
+    <button onclick='chart.setUpToTheRootHighlighted("3").render().fit()'
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-route"></i> mark root
+    </button>
+    <br />
+    <button onclick="chart.clearHighlighting()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-eraser"></i> clear mark
+    </button>
+    <br /> -->
+    <button onclick="chart.fullscreen('body')" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-expand"></i> fullscreen</button><br />
+
+    <!-- <button onclick="chart.exportImg()" class="btn btn-action-button waves-effect waves-light">
+      <i class="far fa-images"></i> export img
+    </button>
+    <br />
+
+    <button onclick="chart.exportImg({full:true})" class="btn btn-action-button waves-effect waves-light">
+      <i class="far fa-images"></i> export full img
+    </button>
+    <br /> -->
+    <!-- 
+    <button onclick="chart.exportSvg()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-file-download"></i> export svg
+    </button> 
+
+    <br /> -->
+    <button onclick="chart.expandAll()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-angle-double-down"></i> expand all</button><br />
+
+    <button onclick="chart.collapseAll()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-angle-double-up"></i> collapse all</button><br />
+
+    <!--
+    <button onclick="downloadPdf()" class="btn btn-action-button waves-effect waves-light">
+      <i class="far fa-file-pdf"></i> export pdf
+    </button>
+    <br />
+
+     <button onclick='chart.connections([{from:"O-6069",to:"O-6070",label:"Conflicts of interest"}]).render()'
+      class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-project-diagram"></i> add link
+    </button>
+    <br /> -->
+
+    <button onclick="chart.zoomOut()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-minus"></i> zoom out</button><br />
+    <button onclick="chart.zoomIn()" class="btn btn-action-button waves-effect waves-light">
+      <i class="fas fa-plus"></i> zoom in
+    </button>
+    <br />
+  </div>
+
+</body>
+
+</html>
