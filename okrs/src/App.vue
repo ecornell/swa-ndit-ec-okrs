@@ -158,6 +158,7 @@ export default {
     periods: ["2022-Q1"],
     selectedPeriod: "2022-Q1",
     sheet: false,
+    highlightedTeams: []
   }),
 
   mounted() {
@@ -174,47 +175,45 @@ export default {
       this.selected = id;
       // console.log(this.okrs);
       // console.log(id);
+      
+      // this.sheet = true; // Open detail sheet
+
       this.selectedOKR = this.okrs.find(({ ID }) => ID == id);
-      console.log(this.selectedOKR);
-      this.sheet = true; // Open detail sheet
+      this.refOKRs = [this.selectedOKR.parentId]
+      this.supOKRs = this.okrs.filter(({ parentId }) => parentId == id).map( ({ ID }) => ID );
 
-      // Highlight the selected OKR in the chart
-      const selectedElements = document.getElementsByClassName("okr-selected");
-      while (selectedElements.length) {
-        selectedElements[0].classList.remove("okr-selected");
-      }
-      var eSelectedOKR = document.getElementById("okr-" + id);
-      eSelectedOKR.classList.add("okr-selected");
-      console.log(eSelectedOKR);
+      
 
-      // Highlight reference OKRs in the chart
-      const refElements = document.getElementsByClassName("okr-referenced");
-      while (refElements.length) {
-        refElements[0].classList.remove("okr-referenced");
-      }
-      if (this.selectedOKR.parentId) {
-        var eRefOKR = document.getElementById(
-          "okr-" + this.selectedOKR.parentId
-        );
-        eRefOKR.classList.add("okr-referenced");
-        console.log(eRefOKR);
-      }
-
-      // Highlight supporting OKRs in the chart
-      const supElements = document.getElementsByClassName("okr-supporting");
-      console.log(supElements.length);
-      while (supElements.length) {
-        supElements[0].classList.remove("okr-supporting");
-      }
-
-      var supOKRs = this.okrs.filter(({ parentId }) => parentId == id);
-      supOKRs.forEach((okr) => {
-        var eSupOKR = document.getElementById("okr-" + okr.ID);
-        eSupOKR.classList.add("okr-supporting");
+      this.highlightedTeams = []
+      this.highlightedTeams.push(this.selectedOKR["Team.lookupId"]);
+      this.refOKRs.forEach(o => {
+        if (o) {
+          this.highlightedTeams.push(this.okrs.find(({ ID }) => ID == o)["Team.lookupId"]);
+        }
+      });
+      this.supOKRs.forEach(o => {
+        this.highlightedTeams.push(this.okrs.find(({ ID }) => ID == o)["Team.lookupId"]);
       });
 
 
-      //this.chart.render();
+      const { allNodes } = this.chart.getChartState();
+      allNodes.forEach(d => {
+        if (this.highlightedTeams.includes(d.data.id)) {
+          // console.log("_expanded: " + d.data.id);
+          d.data._expanded = true;
+        } else {
+          // console.log("collapse " + d.data.id);
+          d.data._expanded = false;
+        }
+        
+
+      });
+
+
+      //this.chart.expandLevel(0)
+
+
+      this.chart.render();
     },
   },
 

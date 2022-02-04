@@ -1,0 +1,14 @@
+﻿Name,Short Name,parentId,Parent Team.lookupValue,id
+NDIT,NDIT,,,1
+CTO Section,CTO,1,NDIT,2
+EA Program,EA,2,CTO Section,3
+EA Business,EA-B,3,EA Program,4
+EA Data/App,EA-DA,3,EA Program,5
+EA Infra,EA-I,3,EA Program,6
+Service Management,SM,2,CTO Section,7
+Cloud and Infrastructure,CI,2,CTO Section,8
+System Platforms,SP,8,Cloud and Infrastructure,9
+Data Platforms,DP,8,Cloud and Infrastructure,10
+Network and Facilities,NF,8,Cloud and Infrastructure,11
+Public Safety,PS,8,Cloud and Infrastructure,12
+EduTech,ET,2,Cloud and Infrastructure,13
