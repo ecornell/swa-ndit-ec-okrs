@@ -20,13 +20,13 @@ export default {
   },
 
   mounted() {
-    d3.csv("http://127.0.0.1:5500/src/data/OKRs-Sync.csv").then((okrs_all) => {
+    d3.csv("https://saitdecornellokrs.blob.core.windows.net/files-public/OKRs-Sync.csv").then((okrs_all) => {
       App.okrs_all = okrs_all;
 
       let okrs = okrs_all.filter((okr) => okr["Period"] == "2022-Q1");
       App.okrs = okrs;
 
-      d3.csv("http://127.0.0.1:5500/src//data/OKRs-teams.csv").then((teams) => {
+      d3.csv("https://saitdecornellokrs.blob.core.windows.net/files-public/OKRs-Teams.csv").then((teams) => {
         console.log(teams);
 
         App.teams = teams;
