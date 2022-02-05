@@ -34,6 +34,12 @@
 
       <v-spacer></v-spacer>
 
+      <v-checkbox
+        v-model="cbRelated"
+        :label="`Filter Related`"
+        dense
+        hide-details="true"
+      ></v-checkbox>
       {{ message }}
     </v-app-bar>
 
@@ -49,6 +55,20 @@
       persistent
       no-click-animation
     >
+      <template v-slot:activator="{ on, attrs }">
+        <v-row align="center" justify="space-around">
+          <v-btn
+            color="blue"
+            dark
+            v-bind="attrs"
+            v-on="on"
+            style="margin-top: -70px"
+          >
+            Details
+          </v-btn>
+        </v-row>
+      </template>
+
       <v-sheet class="" height="100%">
         <v-container>
           <v-row dense>
@@ -145,6 +165,7 @@ export default {
 
   data: () => ({
     message: "",
+    cbRelated: true,
     teams: [],
     okrs: [],
     selected: "",
@@ -215,6 +236,7 @@ export default {
         });
 
         const { allNodes } = this.chart.getChartState();
+
         allNodes.forEach((d) => {
           if (this.highlightedTeams.includes(d.data.id)) {
             d.data._expanded = true;
@@ -226,7 +248,6 @@ export default {
         });
 
         this.chart.setCentered(this.selectedOKR["Team.lookupId"]);
-      
 
         this.chart.render();
       }
@@ -266,6 +287,29 @@ export default {
         ({ data }) => attrs.nodeId(data) == newValue
       )[0];
       this.chart.fit({ animate: true, nodes: [node], scale: true });
+      this.chart.render();
+    },
+    cbRelated: function (newValue) {
+      console.log(newValue);
+
+      const { allNodes } = this.chart.getChartState();
+
+      if (newValue) {
+        allNodes.forEach((d) => {
+          if (this.highlightedTeams.includes(d.data.id)) {
+            d.data._expanded = true;
+            d.data._related = true;
+          } else {
+            d.data._expanded = false;
+            d.data._related = false;
+          }
+        });
+      } else {
+        allNodes.forEach((d) => {
+          d.data._related = true;
+        });
+      }
+
       this.chart.render();
     },
   },

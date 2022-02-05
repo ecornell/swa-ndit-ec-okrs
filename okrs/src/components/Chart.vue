@@ -34,41 +34,20 @@ export default {
         App.chart = new OrgChart()
           .container(".chart-container")
           .data(teams)
-          // .nodeHeight((d) => 200)
           .nodeHeight((d) => {
-            var height = 36;
-            var teamOkrs = okrs.filter(
-              (okr) => okr["Team.lookupId"] == d.data.id
-            );
-
-            teamOkrs.sort((a, b) => {
-              return a["#"] - b["#"];
-            });
+            var height = 38;
+            var teamOkrs = getTeamOKrs(okrs, d);
 
             d.data.numObjs = 0;
             d.data.numKRs = 0;
 
-            var shown;
+            updateOkrVisability(teamOkrs);
+
             teamOkrs.forEach((okr) => {
-              shown = true;
-              if (App.selectedOKR) {
-                if (okr["ID"] == App.selectedOKR["ID"]) {
-                  //
-                } else if (
-                  App.refOKRs &&
-                  App.refOKRs.some((o) => o.ID == okr["ID"])
-                ) {
-                  //
-                } else if (
-                  App.supOKRs &&
-                  App.supOKRs.some((o) => o.ID == okr["ID"])
-                ) {
-                  //
-                } else if (okr.Category == "KR") {
-                  shown = false;
+              if (okr.shown) {
+                if (okr.Title.toString().length > 110) {
+                  height = height + 14;
                 }
-              }
-              if (shown) {
                 if (okr.Category == "Obj") {
                   d.data.numObjs++;
                 } else {
@@ -81,14 +60,15 @@ export default {
               height = height + d.data.numObjs * 24;
             }
             if (d.data && d.data.numKRs) {
-              height = height + d.data.numKRs * 18;
+              height = height + d.data.numKRs * 16;
             }
-
             return height;
           })
           .nodeWidth((d) => {
-            //if (d.depth == 0) return 400;
-            return 600;
+            var teamOkrs = getTeamOKrs(okrs, d);
+            updateOkrVisability(teamOkrs);
+            var hasVisibleOKRs = teamOkrs.some((okr) => okr.shown);
+            return hasVisibleOKRs ? 600 : 200;
           })
           .childrenMargin((d) => 90)
           .compactMarginBetween((d) => 65)
@@ -96,7 +76,7 @@ export default {
           .neightbourMargin((a, b) => 50)
           .siblingsMargin((d) => 100)
           .buttonContent(({ node, state }) => {
-            return `<div style="color:#333333;border-radius:5px;padding:4px 8px;font-size:10px;margin:auto auto;background-color:#fcfcfc;border: 1px solid #222222"> <span style="font-size:9px">${
+            return `<div style="color:#333333;border-radius:5px;padding:3px 10px;font-size:10px;margin:auto auto;background-color:#fcfcfc;border: 1px solid #222222"> <span style="font-size:9px">${
               node.children
                 ? `<i class="fas fa-angle-up"></i>`
                 : `<i class="fas fa-angle-down"></i> ${node.data._directSubordinates}`
@@ -116,56 +96,23 @@ export default {
             }
           })
           .nodeContent(function (d, i, arr, state) {
+            var teamOkrs = getTeamOKrs(okrs, d);
 
-            var teamOkrs = okrs.filter(
-              (okr) => okr["Team.lookupId"] == d.data.id
-            );
-
-            teamOkrs.sort((a, b) => {
-              return a["#"] - b["#"];
-            });
+            updateOkrVisability(teamOkrs);
 
             var teamOkrsText = [];
-
-            var shown;
             teamOkrs.forEach((okr) => {
-              //   console.log(okr);
-              shown = true;
-
-              let highlightClass = "";
-
-              if (App.selectedOKR) {
-                if (okr["ID"] == App.selectedOKR["ID"]) {
-                  highlightClass = "okr-selected";
-                } else if (
-                  App.refOKRs &&
-                  App.refOKRs.some((o) => o.ID == okr["ID"])
-                ) {
-                  highlightClass = "okr-referenced";
-                } else if (
-                  App.supOKRs &&
-                  App.supOKRs.some((o) => o.ID == okr["ID"])
-                ) {
-                  highlightClass = "okr-supporting";
-                } else {
-                  if (okr.Category == "KR") {
-                    highlightClass = "okr-hidden";
-                    shown = false;
-                  }
-                }
-              }
-
-              if (shown) {
+              if (okr.shown) {
                 if (okr.Category == "Obj") {
                   teamOkrsText.push(`
-                  <div class="okr-obj ${highlightClass}" id="okr-${okr["ID"]}" onclick="App.setSelected(${okr["ID"]})" >
+                  <div class="okr-obj ${okr.highlightClass}" id="okr-${okr["ID"]}" onclick="App.setSelected(${okr["ID"]})" >
                   <span class="okr-obj-id">${okr["Category"]} ${okr["#"]} - </span>
                   <span class="okr-obj-title">${okr.Title}</span>
                   </div>
                 `);
                 } else {
                   teamOkrsText.push(`
-                  <div class="okr-kr ${highlightClass}" id="okr-${okr["ID"]}" onclick="App.setSelected(${okr["ID"]})">
+                  <div class="okr-kr ${okr.highlightClass}" id="okr-${okr["ID"]}" onclick="App.setSelected(${okr["ID"]})">
                     <span class="okr-kr-id">${okr["Category"]} ${okr["#"]}</span>
                     <span class="okr-kr-sep">-&nbsp;</span>
                     <span class="okr-kr-title">${okr.Title}</span>
@@ -173,8 +120,6 @@ export default {
                 }
               }
             });
-
-            // console.log(teamOkrsText.length);
 
             return `                  
                     <div class="okr" style="width:${
@@ -205,4 +150,49 @@ export default {
     });
   },
 };
+
+function getTeamOKrs(okrs, d) {
+  var teamOkrs = okrs.filter((okr) => okr["Team.lookupId"] == d.data.id);
+  teamOkrs.sort((a, b) => {
+    return a["#"] - b["#"];
+  });
+  return teamOkrs;
+}
+
+function updateOkrVisability(teamOkrs) {
+  teamOkrs.forEach((okr) => {
+    okr.highlightClass = "";
+    okr.shown = true;
+  });
+
+  teamOkrs.forEach((okr) => {
+    if (App.selectedOKR) {
+      if (okr["ID"] == App.selectedOKR["ID"]) {
+        okr.highlightClass = "okr-selected";
+      } else if (App.refOKRs && App.refOKRs.some((o) => o.ID == okr["ID"])) {
+        okr.highlightClass = "okr-referenced";
+      } else if (App.supOKRs && App.supOKRs.some((o) => o.ID == okr["ID"])) {
+        okr.highlightClass = "okr-supporting";
+      } else {
+        //if (okr.Category == "KR") {
+        if (App.cbRelated) {
+          okr.highlightClass = "okr-hidden";
+          okr.shown = false;
+        }
+        //}
+      }
+
+      if (okr.shown && okr.Category == "KR" && App.cbRelated) {
+        // show parent Obj if KR is shown
+        console.log(okr["#"].split(".")[0]);
+        var parentObj = teamOkrs.find((o) => o["#"] == okr["#"].split(".")[0]);
+        console.log(parentObj);
+        if (parentObj) {
+          parentObj.shown = true;
+          parentObj.highlightClass = "";
+        }
+      }
+    }
+  });
+}
 </script>
