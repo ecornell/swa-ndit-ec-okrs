@@ -150,7 +150,9 @@ export default {
     selected: "",
     selectedOKR: "",
     refOKRs: [],
+    refOKRsX: [],
     supOKRs: [],
+    supOKRsX: [],
     chart: null,
     chart_index: 0,
     chart_compact: 0,
@@ -158,7 +160,7 @@ export default {
     periods: ["2022-Q1"],
     selectedPeriod: "2022-Q1",
     sheet: false,
-    highlightedTeams: []
+    highlightedTeams: [],
   }),
 
   mounted() {
@@ -172,46 +174,81 @@ export default {
       }
     },
     setSelected: function (id) {
-      this.selected = id;
-      // console.log(this.okrs);
-      // console.log(id);
+      console.log(id + " " + this.selectedOKR["ID"]);
+
+      if (this.selectedOKR["ID"] == id) {
+        this.resetSelected();
+      } else {
+        // console.log(this.okrs);
+        // console.log(id);
+
+        // this.sheet = true; // Open detail sheet
+
+        this.selectedOKR = this.okrs.find(({ ID }) => ID == id);
+        this.refOKRs = this.okrs.filter(
+          ({ ID }) => ID == this.selectedOKR.parentId
+        );
+        this.supOKRs = this.okrs.filter(({ parentId }) => parentId == id);
+
+        this.highlightedTeams = [];
+        this.highlightedTeams.push(this.selectedOKR["Team.lookupId"]);
+        this.refOKRs.forEach((o) => {
+          if (!this.highlightedTeams.includes(o["Team.lookupId"])) {
+            this.highlightedTeams.push(o["Team.lookupId"]);
+          }
+        });
+        this.supOKRs.forEach((o) => {
+          if (!this.highlightedTeams.includes(o["Team.lookupId"])) {
+            this.highlightedTeams.push(o["Team.lookupId"]);
+          }
+        });
+
+        let tempList = [...this.highlightedTeams];
+        tempList.forEach((t) => {
+          let parentTeams = this._getParentTeams(t);
+          console.log(parentTeams);
+          parentTeams.forEach((p) => {
+            if (!this.highlightedTeams.includes(p)) {
+              this.highlightedTeams.push(p);
+            }
+          });
+        });
+
+        const { allNodes } = this.chart.getChartState();
+        allNodes.forEach((d) => {
+          if (this.highlightedTeams.includes(d.data.id)) {
+            d.data._expanded = true;
+            d.data._related = true;
+          } else {
+            d.data._expanded = false;
+            d.data._related = false;
+          }
+        });
+
+        this.chart.setCentered(this.selectedOKR["Team.lookupId"]);
       
-      // this.sheet = true; // Open detail sheet
 
-      this.selectedOKR = this.okrs.find(({ ID }) => ID == id);
-      this.refOKRs = [this.selectedOKR.parentId]
-      this.supOKRs = this.okrs.filter(({ parentId }) => parentId == id).map( ({ ID }) => ID );
-
-      
-
-      this.highlightedTeams = []
-      this.highlightedTeams.push(this.selectedOKR["Team.lookupId"]);
-      this.refOKRs.forEach(o => {
-        if (o) {
-          this.highlightedTeams.push(this.okrs.find(({ ID }) => ID == o)["Team.lookupId"]);
-        }
-      });
-      this.supOKRs.forEach(o => {
-        this.highlightedTeams.push(this.okrs.find(({ ID }) => ID == o)["Team.lookupId"]);
-      });
-
+        this.chart.render();
+      }
+    },
+    _getParentTeams: function (tId, parentTeams = []) {
+      let t = this.teams.filter(({ id }) => id == tId)[0];
+      let pT = t["parentId"];
+      if (pT && pT != 0 && pT != "") {
+        parentTeams.push(pT);
+        this._getParentTeams(pT, parentTeams);
+      }
+      return parentTeams;
+    },
+    resetSelected: function () {
+      this.selectedOKR = "";
+      this.refOKRs = [];
+      this.supOKRs = [];
 
       const { allNodes } = this.chart.getChartState();
-      allNodes.forEach(d => {
-        if (this.highlightedTeams.includes(d.data.id)) {
-          // console.log("_expanded: " + d.data.id);
-          d.data._expanded = true;
-        } else {
-          // console.log("collapse " + d.data.id);
-          d.data._expanded = false;
-        }
-        
-
+      allNodes.forEach((d) => {
+        d.data._related = true;
       });
-
-
-      //this.chart.expandLevel(0)
-
 
       this.chart.render();
     },
@@ -219,7 +256,9 @@ export default {
 
   watch: {
     selectedTeam: function (newValue) {
-      console.log(newValue);
+      //console.log(newValue);
+      this.resetSelected();
+
       this.chart.setExpanded(newValue).render();
       this.chart.setCentered(newValue).render();
       const attrs = this.chart.getChartState();
