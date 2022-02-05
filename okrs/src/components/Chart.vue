@@ -165,8 +165,8 @@ function updateOkrVisability(teamOkrs) {
     okr.shown = true;
   });
 
-  teamOkrs.forEach((okr) => {
-    if (App.selectedOKR) {
+  if (App.selectedOKR) {
+    teamOkrs.forEach((okr) => {
       if (okr["ID"] == App.selectedOKR["ID"]) {
         okr.highlightClass = "okr-selected";
       } else if (App.refOKRs && App.refOKRs.some((o) => o.ID == okr["ID"])) {
@@ -174,25 +174,24 @@ function updateOkrVisability(teamOkrs) {
       } else if (App.supOKRs && App.supOKRs.some((o) => o.ID == okr["ID"])) {
         okr.highlightClass = "okr-supporting";
       } else {
-        //if (okr.Category == "KR") {
         if (App.cbRelated) {
           okr.highlightClass = "okr-hidden";
           okr.shown = false;
         }
-        //}
       }
 
+      // show parent Obj if KR is shown
       if (okr.shown && okr.Category == "KR" && App.cbRelated) {
-        // show parent Obj if KR is shown
-        console.log(okr["#"].split(".")[0]);
         var parentObj = teamOkrs.find((o) => o["#"] == okr["#"].split(".")[0]);
         console.log(parentObj);
         if (parentObj) {
           parentObj.shown = true;
-          parentObj.highlightClass = "";
+          if (parentObj.highlightClass == "okr-hidden") {
+            parentObj.highlightClass = "";
+          }
         }
       }
-    }
-  });
+    });
+  }
 }
 </script>

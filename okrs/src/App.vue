@@ -63,6 +63,7 @@
             v-bind="attrs"
             v-on="on"
             style="margin-top: -70px"
+            v-if="btnDetailsVisible"
           >
             Details
           </v-btn>
@@ -181,6 +182,7 @@ export default {
     periods: ["2022-Q1"],
     selectedPeriod: "2022-Q1",
     sheet: false,
+    btnDetailsVisible: false,
     highlightedTeams: [],
   }),
 
@@ -311,6 +313,14 @@ export default {
       }
 
       this.chart.render();
+    },
+    selectedOKR: function (newValue) {
+      console.log("selected changed" + newValue);
+      if(newValue != "") {
+        this.btnDetailsVisible = true;
+      } else {
+        this.btnDetailsVisible = false;
+      }
     },
   },
 };
