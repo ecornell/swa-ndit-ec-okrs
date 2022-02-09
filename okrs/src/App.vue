@@ -64,6 +64,7 @@
 
       <Chart v-if="!modeTable" />
       <ChartButtons v-if="!modeTable" />
+      
     </v-main>
 
     <v-bottom-sheet

@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <v-container>
     <TableTree
       v-for="hItem in heirarchyItems"
       v-bind:item="hItem"
       v-bind:okrs="okrs"
       v-bind:key="hItem.id"
     ></TableTree>
-  </div>
+  </v-container>
 </template>
 
 <script>
