@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark dense>
-      <v-toolbar-title>NDIT ORKs</v-toolbar-title>
+      <v-toolbar-title>NDIT OKRs</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -11,6 +11,8 @@
         dense
         auto-select-first
         label="Period"
+        item-text="Title"
+        item-value="id"
         outlined
         single-line
         hint="Select a period"
@@ -21,7 +23,7 @@
       <v-autocomplete
         v-model="selectedTeam"
         :items="teams"
-        item-text="Name"
+        item-text="Title"
         item-value="id"
         dense
         auto-select-first
@@ -41,11 +43,27 @@
         hide-details="true"
       ></v-checkbox>
       {{ message }}
+      <v-spacer></v-spacer>
+      <v-btn depressed @click="fullLogout">
+        <span>Logout</span>
+      </v-btn>
     </v-app-bar>
 
     <v-main>
-      <Chart />
-      <ChartButtons />
+      <div v-if="error" class="notification is-danger is-4 title">
+        {{ error }}
+      </div>
+
+      <Login v-if="!user && !error" @loginComplete="updateUser" />
+
+      <!-- <div v-if="user && !error" class="columns is-multiline">
+        <p><b>Name:</b> {{ user }}</p>
+      </div> -->
+
+      <Table v-if="modeTable" :okrs="okrs" :teams="teams"/>
+
+      <Chart v-if="!modeTable" />
+      <ChartButtons v-if="!modeTable" />
     </v-main>
 
     <v-bottom-sheet
@@ -145,26 +163,46 @@
 </template>
 
 <script>
+import auth from "./services/auth";
+import graph from "./services/graph";
+import Login from "./components/Login";
 import Chart from "./components/Chart";
 import ChartButtons from "./components/ChartButtons";
+import Table from "./components/Table";
 
 export default {
   name: "App",
 
   components: {
+    Login,
     Chart,
     ChartButtons,
+    Table,
   },
 
   created() {
-    window.addEventListener("keydown", this.escapeListener);
+    // Basic setup of MSAL helper with client id, or give up
+    if (process.env.VUE_APP_CLIENT_ID) {
+      auth.configure(process.env.VUE_APP_CLIENT_ID, false);
+      // Restore any cached or saved local user
+      this.user = auth.user();
+      console.log(`configured ${auth.isConfigured()}`);
+    } else {
+      this.error =
+        "VUE_APP_CLIENT_ID is not set, the app will not function! 😥";
+    }
+
+    //
+
+    this.loadData();
   },
 
-  destroyed() {
-    window.removeEventListener("keydown", this.escapeListener);
-  },
+  destroyed() {},
 
   data: () => ({
+    modeTable: true,
+    user: {},
+    accessToken: "",
     message: "",
     cbRelated: true,
     teams: [],
@@ -179,11 +217,13 @@ export default {
     chart_index: 0,
     chart_compact: 0,
     selectedTeam: [],
-    periods: ["2022-Q1"],
-    selectedPeriod: "2022-Q1",
+    periods: [],
+    selectedPeriod: "1",
     sheet: false,
     btnDetailsVisible: false,
     highlightedTeams: [],
+    // Any errors
+    error: "",
   }),
 
   mounted() {
@@ -191,11 +231,38 @@ export default {
   },
 
   methods: {
-    escapeListener(event) {
-      if (event.key === "Escape") {
-        this.message = "Escape has been pressed";
-      }
+    // Auth / Graph
+    updateUser() {
+      this.user = auth.user();
     },
+    fullLogout() {
+      auth.logout();
+    },
+    // OKRs
+    async loadData() {
+      const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
+      this.teams = await graph.getList(
+        teamsListId,
+        "id,Title,ShortName,ParentLookupId"
+      );
+
+      const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
+      this.periods = await graph.getList(
+        periodsListId,
+        "id,Title,StartDate,EndDate"
+      );
+
+      const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
+      this.okrs = await graph.getList(okrsListId,
+      "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnerLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,CoOwner,Tags",
+      `fields/Period0LookupId eq '${this.selectedPeriod}'`);
+
+      this.okrs.sort((a, b) => {
+        return a["OKR_x002d_ID"] - b["OKR_x002d_ID"];
+      });
+
+    },
+
     setSelected: function (id) {
       console.log(id + " " + this.selectedOKR["ID"]);
 
@@ -279,44 +346,50 @@ export default {
 
   watch: {
     selectedTeam: function (newValue) {
-      //console.log(newValue);
-      this.resetSelected();
-
-      this.chart.setExpanded(newValue).render();
-      this.chart.setCentered(newValue).render();
-      const attrs = this.chart.getChartState();
-      const node = attrs.allNodes.filter(
-        ({ data }) => attrs.nodeId(data) == newValue
-      )[0];
-      this.chart.fit({ animate: true, nodes: [node], scale: true });
-      this.chart.render();
+      if (this.modeTable) {
+        //
+      } else {
+        this.resetSelected();
+        this.chart.setExpanded(newValue).render();
+        this.chart.setCentered(newValue).render();
+        const attrs = this.chart.getChartState();
+        const node = attrs.allNodes.filter(
+          ({ data }) => attrs.nodeId(data) == newValue
+        )[0];
+        this.chart.fit({ animate: true, nodes: [node], scale: true });
+        this.chart.render();
+      }
     },
     cbRelated: function (newValue) {
-      console.log(newValue);
-
-      const { allNodes } = this.chart.getChartState();
-
-      if (newValue) {
-        allNodes.forEach((d) => {
-          if (this.highlightedTeams.includes(d.data.id)) {
-            d.data._expanded = true;
-            d.data._related = true;
-          } else {
-            d.data._expanded = false;
-            d.data._related = false;
-          }
-        });
+      if (this.modeTable) {
+        //
       } else {
-        allNodes.forEach((d) => {
-          d.data._related = true;
-        });
-      }
+        console.log(newValue);
 
-      this.chart.render();
+        const { allNodes } = this.chart.getChartState();
+
+        if (newValue) {
+          allNodes.forEach((d) => {
+            if (this.highlightedTeams.includes(d.data.id)) {
+              d.data._expanded = true;
+              d.data._related = true;
+            } else {
+              d.data._expanded = false;
+              d.data._related = false;
+            }
+          });
+        } else {
+          allNodes.forEach((d) => {
+            d.data._related = true;
+          });
+        }
+
+        this.chart.render();
+      }
     },
     selectedOKR: function (newValue) {
       console.log("selected changed" + newValue);
-      if(newValue != "") {
+      if (newValue != "") {
         this.btnDetailsVisible = true;
       } else {
         this.btnDetailsVisible = false;
