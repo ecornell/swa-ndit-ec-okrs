@@ -5,7 +5,7 @@
  <script>
 /* eslint-disable no-unused-vars, no-undef */
 
-import { OrgChart } from "../org-chart.js";
+import { OrgChart } from "../services/org-chart.js";
 
 export default {
   name: "Chart",
