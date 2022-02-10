@@ -1,6 +1,6 @@
 <template>
   <div class="table-okr-section">
-    <div class="table-okr-team" v-bind:class="[team.displayClass]">{{ team.Title }}</div>
+    <div class="table-okr-team" v-bind:class="[team.displayClass]" ref="team-1" :id="'team-'+team.id">{{ team.Title }}</div>
     <div class="table-okr-orks">
       <div
         v-for="okr in okrsByTeam(team.id)"

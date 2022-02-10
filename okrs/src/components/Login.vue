@@ -1,47 +1,46 @@
 <template>
-  <div class="centered">
-    <h1 class="title is-5">
-      Please login with Microsoft Identity Platform
-    </h1>
-    <button class="button is-dark is-large" @click="doLogin">
-      Sign in
-    </button>
-    <p class="mt-4">
-      Note. You can login with a 'work &amp; school' or personal Microsoft account
-    </p>
-
-    <div v-if="error" class="notification is-warning mt-4">
-      {{ error }}
-    </div>
-  </div>
+  <v-container>
+    <v-card class="mx-auto" max-width="344" outlined elevation="2">
+      <v-list-item three-line>
+        <h1 class="title is-5">Please login to access the OKR information</h1>
+      </v-list-item>
+        <v-card-actions>
+          <v-btn
+      depressed
+      color="primary" @click="doLogin"> Login </v-btn>
+        </v-card-actions>
+      <div v-if="error" class="notification is-warning mt-4">
+        {{ error }}
+      </div>
+    </v-card>
+  </v-container>
 </template>
 
 <script>
-import auth from '../services/auth'
+import auth from "../services/auth";
 
 export default {
-
-  data: function() {
+  data: function () {
     return {
-      error: ''
-    }
+      error: "",
+    };
   },
 
   methods: {
     async doLogin() {
       try {
-        await auth.login()
-        this.$emit('loginComplete')
+        await auth.login();
+        this.$emit("loginComplete");
       } catch (err) {
-        this.error = err.toString()
+        this.error = err.toString();
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
-  .centered {
-    text-align: center;
-  }
+.centered {
+  text-align: center;
+}
 </style>

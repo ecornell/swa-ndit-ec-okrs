@@ -53,9 +53,6 @@ export default {
         }
     },
 
-
-
-
     async getList(list, select = '', filter = '', top = 999, fieldsOnly = true) {
 
         const siteId = process.env.VUE_APP_SP_SITE_ID;
@@ -76,10 +73,8 @@ export default {
             call = call + `&$top=${top}`
         }
 
-
         console.log(call)
         let resp = await callGraph(call)
-
 
         if (resp) {
             let data = await resp.json()

@@ -44,121 +44,27 @@
       ></v-checkbox>
       {{ message }}
       <v-spacer></v-spacer>
-      <v-btn depressed @click="fullLogout">
+      <v-btn v-if="user" depressed @click="fullLogout">
         <span>Logout</span>
       </v-btn>
     </v-app-bar>
 
     <v-main>
-      <div v-if="error" class="notification is-danger is-4 title">
+      <div v-if="error">
         {{ error }}
       </div>
 
-      <Login v-if="!user && !error" @loginComplete="updateUser" />
-
-      <!-- <div v-if="user && !error" class="columns is-multiline">
-        <p><b>Name:</b> {{ user }}</p>
-      </div> -->
-
-      <Table v-if="modeTable" :okrs="okrs" :teams="teams" />
-
-      <Chart v-if="!modeTable" />
-      <ChartButtons v-if="!modeTable" />
-    </v-main>
-
-    <v-bottom-sheet
-      v-model="sheet"
-      inset
-      hide-overlay
-      persistent
-      no-click-animation
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-row align="center" justify="space-around">
-          <v-btn
-            color="blue"
-            dark
-            v-bind="attrs"
-            v-on="on"
-            style="margin-top: -70px"
-            v-if="btnDetailsVisible"
-          >
-            Details
-          </v-btn>
-        </v-row>
+      <template v-if="!user && !error">
+        <Login v-if="!user && !error" @loginComplete="updateUser" />
+      </template>
+      <template v-else>
+        <Table v-if="modeTable" :okrs="okrs" :teams="teams" />
+        <Chart v-if="!modeTable" />
+        <ChartButtons v-if="!modeTable" />
+        <ChartDetails v-if="!modeTable"/>
       </template>
 
-      <v-sheet class="" height="100%">
-        <v-container>
-          <v-row dense>
-            <v-col cols="8">
-              {{ selectedOKR["Category"] }} {{ selectedOKR["#"] }} -
-              {{ selectedOKR["Title"] }}
-            </v-col>
-
-            <v-col cols="3"
-              ><span class="grey--text float-right"
-                >{{ selectedOKR["ID"] }}-{{ selectedOKR["OKR-ID"] }}</span
-              ></v-col
-            >
-
-            <v-col cols="1">
-              <v-btn
-                class="float-right"
-                style="margin: -8px -8px 0 0"
-                fab
-                x-small
-                color="grey"
-                icon
-                @click="sheet = !sheet"
-              >
-                <v-icon light> mdi-close </v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-
-          <v-col cols="12"> </v-col>
-
-          <v-row dense>
-            <v-col cols="2"><span class="grey--text">Team</span></v-col>
-            <v-col cols="4">
-              {{ selectedOKR["Team.lookupValue"] }}
-            </v-col>
-
-            <v-col cols="2"><span class="grey--text">Confidence</span></v-col>
-            <v-col cols="4">
-              {{ selectedOKR["Confidence %"] }}
-            </v-col>
-          </v-row>
-
-          <v-row dense>
-            <v-col cols="2"><span class="grey--text">Owner</span></v-col>
-            <v-col cols="4">
-              {{ selectedOKR["Owner.title"] }}
-            </v-col>
-
-            <v-col cols="2"><span class="grey--text">Progress</span></v-col>
-            <v-col cols="4">
-              {{ selectedOKR["Progress %"] }}
-            </v-col>
-          </v-row>
-
-          <v-row dense>
-            <v-col cols="2"><span class="grey--text">Co-Owners</span></v-col>
-            <v-col cols="4">
-              {{ selectedOKR["Co-Owners.title"] }}
-            </v-col>
-          </v-row>
-
-          <v-row dense>
-            <v-col cols="2"><span class="grey--text">Referenced</span></v-col>
-            <v-col cols="10">
-              {{ selectedOKR["Reference.lookupValue"] }}
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
-    </v-bottom-sheet>
+    </v-main>
   </v-app>
 </template>
 
@@ -169,6 +75,7 @@ import graph from "./services/graph";
 import Login from "./components/Login";
 import Chart from "./components/Chart";
 import ChartButtons from "./components/ChartButtons";
+import ChartDetails from "./components/ChartDetails";
 import Table from "./components/Table";
 
 export default {
@@ -178,6 +85,7 @@ export default {
     Login,
     Chart,
     ChartButtons,
+    ChartDetails,
     Table,
   },
 
@@ -195,7 +103,7 @@ export default {
 
     //
 
-    this.loadData();
+    //this.loadData();
   },
 
   destroyed() {},
@@ -238,6 +146,11 @@ export default {
     },
     fullLogout() {
       auth.logout();
+      this.user = null;
+      this.teams = [];
+      this.okrs = [];
+      this.periods = [];
+    
     },
     // OKRs
     async loadData() {
@@ -268,19 +181,10 @@ export default {
     setSelected: function (_id) {
       // console.log(`setSelected ${_id}`);
       // console.log(id + " " + this.selectedOKR["ID"]);
-
-      this.teams.forEach((team) => {
-        Vue.set(team, "displayClass", "");
-      });
-
-      this.okrs.forEach((okr) => {
-        Vue.set(okr, "highlightClass", "");
-        Vue.set(okr, "shown", true);
-      });
-
       if (this.selectedOKR && this.selectedOKR["id"] == _id) {
         this.resetSelected();
       } else {
+        this.resetSelected();
         // console.log(this.okrs);
         // console.log(id);
         // this.sheet = true; // Open detail sheet
@@ -341,11 +245,6 @@ export default {
               }
             }
 
-            // var teamOkrs = thisokrs.filter((okr) => okr["TeamLookupId"] == d.data.id);
-            // teamOkrs.sort((a, b) => {
-            //   return a["#"] - b["#"];
-            // });
-
             // show parent Obj if KR is shown
             if (okr.shown && okr.Category == "KR" && this.cbRelated) {
               var parentObj = this.okrs.find(
@@ -402,7 +301,14 @@ export default {
       this.supOKRs = [];
 
       if (this.modeTable) {
-        //
+        this.teams.forEach((team) => {
+          Vue.set(team, "displayClass", "");
+        });
+
+        this.okrs.forEach((okr) => {
+          Vue.set(okr, "highlightClass", "");
+          Vue.set(okr, "shown", true);
+        });
       } else {
         const { allNodes } = this.chart.getChartState();
         allNodes.forEach((d) => {
@@ -415,10 +321,14 @@ export default {
 
   watch: {
     selectedTeam: function (newValue) {
+      this.resetSelected();
+
       if (this.modeTable) {
-        //
+        console.log("watch selectedTeam : " + newValue);
+        var element = document.getElementById("team-" + newValue);
+        var top = element.offsetTop;
+        window.scrollTo(0, top);
       } else {
-        this.resetSelected();
         this.chart.setExpanded(newValue).render();
         this.chart.setCentered(newValue).render();
         const attrs = this.chart.getChartState();
@@ -466,6 +376,12 @@ export default {
         } else {
           this.btnDetailsVisible = false;
         }
+      }
+    },
+    user: function (newValue) {
+      console.log("user changed " + newValue);
+      if (newValue && newValue.size != 0) {
+        this.loadData();
       }
     },
   },
