@@ -60,11 +60,10 @@
         <p><b>Name:</b> {{ user }}</p>
       </div> -->
 
-      <Table v-if="modeTable" :okrs="okrs" :teams="teams"/>
+      <Table v-if="modeTable" :okrs="okrs" :teams="teams" />
 
       <Chart v-if="!modeTable" />
       <ChartButtons v-if="!modeTable" />
-      
     </v-main>
 
     <v-bottom-sheet
@@ -164,6 +163,7 @@
 </template>
 
 <script>
+import Vue from "vue";
 import auth from "./services/auth";
 import graph from "./services/graph";
 import Login from "./components/Login";
@@ -209,7 +209,7 @@ export default {
     teams: [],
     okrs: [],
     selected: "",
-    selectedOKR: "",
+    selectedOKR: [],
     refOKRs: [],
     refOKRsX: [],
     supOKRs: [],
@@ -254,50 +254,63 @@ export default {
       );
 
       const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
-      this.okrs = await graph.getList(okrsListId,
-      "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnerLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,CoOwner,Tags",
-      `fields/Period0LookupId eq '${this.selectedPeriod}'`);
+      this.okrs = await graph.getList(
+        okrsListId,
+        "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnerLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,CoOwner,Tags,ReferenceLookupId",
+        `fields/Period0LookupId eq '${this.selectedPeriod}'`
+      );
 
       this.okrs.sort((a, b) => {
         return a["OKR_x002d_ID"] - b["OKR_x002d_ID"];
       });
-
     },
 
-    setSelected: function (id) {
-      console.log(id + " " + this.selectedOKR["ID"]);
+    setSelected: function (_id) {
+      // console.log(`setSelected ${_id}`);
+      // console.log(id + " " + this.selectedOKR["ID"]);
 
-      if (this.selectedOKR["ID"] == id) {
+      this.teams.forEach((team) => {
+        Vue.set(team, "displayClass", "");
+      });
+
+      this.okrs.forEach((okr) => {
+        Vue.set(okr, "highlightClass", "");
+        Vue.set(okr, "shown", true);
+      });
+
+      if (this.selectedOKR && this.selectedOKR["id"] == _id) {
         this.resetSelected();
       } else {
         // console.log(this.okrs);
         // console.log(id);
-
         // this.sheet = true; // Open detail sheet
 
-        this.selectedOKR = this.okrs.find(({ ID }) => ID == id);
-        this.refOKRs = this.okrs.filter(
-          ({ ID }) => ID == this.selectedOKR.parentId
-        );
-        this.supOKRs = this.okrs.filter(({ parentId }) => parentId == id);
+        this.selectedOKR = this.okrs.find(({ id }) => id == _id);
+        // console.log("selectedOKR: " + this.selectedOKR);
 
+        this.refOKRs = this.okrs.filter(
+          ({ id }) => id == this.selectedOKR.ReferenceLookupId
+        );
+        this.supOKRs = this.okrs.filter(
+          ({ ReferenceLookupId }) => ReferenceLookupId == _id
+        );
+
+        // Identify the teams that are related to this OKR
         this.highlightedTeams = [];
-        this.highlightedTeams.push(this.selectedOKR["Team.lookupId"]);
+        this.highlightedTeams.push(this.selectedOKR["TeamLookupId"]);
         this.refOKRs.forEach((o) => {
-          if (!this.highlightedTeams.includes(o["Team.lookupId"])) {
-            this.highlightedTeams.push(o["Team.lookupId"]);
+          if (!this.highlightedTeams.includes(o["TeamLookupId"])) {
+            this.highlightedTeams.push(o["TeamLookupId"]);
           }
         });
         this.supOKRs.forEach((o) => {
-          if (!this.highlightedTeams.includes(o["Team.lookupId"])) {
-            this.highlightedTeams.push(o["Team.lookupId"]);
+          if (!this.highlightedTeams.includes(o["TeamLookupId"])) {
+            this.highlightedTeams.push(o["TeamLookupId"]);
           }
         });
-
         let tempList = [...this.highlightedTeams];
         tempList.forEach((t) => {
           let parentTeams = this._getParentTeams(t);
-          console.log(parentTeams);
           parentTeams.forEach((p) => {
             if (!this.highlightedTeams.includes(p)) {
               this.highlightedTeams.push(p);
@@ -305,26 +318,78 @@ export default {
           });
         });
 
-        const { allNodes } = this.chart.getChartState();
+        //
 
-        allNodes.forEach((d) => {
-          if (this.highlightedTeams.includes(d.data.id)) {
-            d.data._expanded = true;
-            d.data._related = true;
-          } else {
-            d.data._expanded = false;
-            d.data._related = false;
-          }
-        });
+        if (this.selectedOKR) {
+          this.okrs.forEach((okr) => {
+            if (okr["id"] == this.selectedOKR["id"]) {
+              Vue.set(okr, "highlightClass", "okr-selected");
+            } else if (
+              this.refOKRs &&
+              this.refOKRs.some((o) => o.id == okr["id"])
+            ) {
+              Vue.set(okr, "highlightClass", "okr-referenced");
+            } else if (
+              this.supOKRs &&
+              this.supOKRs.some((o) => o.id == okr["id"])
+            ) {
+              Vue.set(okr, "highlightClass", "okr-supporting");
+            } else {
+              if (this.cbRelated) {
+                Vue.set(okr, "highlightClass", "okr-hidden");
+                Vue.set(okr, "shown", false);
+              }
+            }
 
-        this.chart.setCentered(this.selectedOKR["Team.lookupId"]);
+            // var teamOkrs = thisokrs.filter((okr) => okr["TeamLookupId"] == d.data.id);
+            // teamOkrs.sort((a, b) => {
+            //   return a["#"] - b["#"];
+            // });
 
-        this.chart.render();
+            // show parent Obj if KR is shown
+            if (okr.shown && okr.Category == "KR" && this.cbRelated) {
+              var parentObj = this.okrs.find(
+                (o) =>
+                  o["TeamLookupId"] == okr["TeamLookupId"] &&
+                  o["_x0023_"] == okr["_x0023_"].toString().split(".")[0]
+              );
+              console.log("Show parent:" + parentObj.id);
+              if (parentObj) {
+                Vue.set(okr, "shown", true);
+                if (parentObj.highlightClass == "okr-hidden") {
+                  Vue.set(parentObj, "highlightClass", "");
+                }
+              }
+            }
+          });
+        }
+
+        if (this.modeTable) {
+          this.teams.forEach((team) => {
+            if (!this.highlightedTeams.includes(team["id"])) {
+              Vue.set(team, "displayClass", "table-ork-team-hidden");
+            }
+          });
+        } else {
+          const { allNodes } = this.chart.getChartState();
+          allNodes.forEach((d) => {
+            if (this.highlightedTeams.includes(d.data.id)) {
+              d.data._expanded = true;
+              d.data._related = true;
+            } else {
+              d.data._expanded = false;
+              d.data._related = false;
+            }
+          });
+          this.chart.setCentered(this.selectedOKR["TeamLookupId"]);
+          this.chart.render();
+        }
       }
     },
     _getParentTeams: function (tId, parentTeams = []) {
+      //console.log("_getParentTeams " + tId + " : " + parentTeams);
       let t = this.teams.filter(({ id }) => id == tId)[0];
-      let pT = t["parentId"];
+      let pT = t["ParentLookupId"];
       if (pT && pT != 0 && pT != "") {
         parentTeams.push(pT);
         this._getParentTeams(pT, parentTeams);
@@ -336,12 +401,15 @@ export default {
       this.refOKRs = [];
       this.supOKRs = [];
 
-      const { allNodes } = this.chart.getChartState();
-      allNodes.forEach((d) => {
-        d.data._related = true;
-      });
-
-      this.chart.render();
+      if (this.modeTable) {
+        //
+      } else {
+        const { allNodes } = this.chart.getChartState();
+        allNodes.forEach((d) => {
+          d.data._related = true;
+        });
+        this.chart.render();
+      }
     },
   },
 
@@ -389,11 +457,15 @@ export default {
       }
     },
     selectedOKR: function (newValue) {
-      console.log("selected changed" + newValue);
-      if (newValue != "") {
-        this.btnDetailsVisible = true;
+      // console.log("watch:selectedOKR - selected changed " + newValue);
+      if (this.modeTable) {
+        //
       } else {
-        this.btnDetailsVisible = false;
+        if (newValue != "") {
+          this.btnDetailsVisible = true;
+        } else {
+          this.btnDetailsVisible = false;
+        }
       }
     },
   },
