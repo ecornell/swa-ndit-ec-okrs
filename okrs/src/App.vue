@@ -1,6 +1,58 @@
 <template>
   <v-app>
+    <v-navigation-drawer v-model="drawer" app>
+
+      <v-subheader>Filters</v-subheader>
+
+      <v-list subheader sinlge-line flat>
+        <v-list-item-group v-model="settings" multiple>
+          <v-list-item value="filter-related" dense>
+            <template v-slot:default="{ active }">
+              <v-list-item-action>
+                <v-checkbox :input-value="active" color="primary"></v-checkbox>
+              </v-list-item-action>
+
+              <v-list-item-content>
+                <v-list-item-title>Filter Related</v-list-item-title>
+                <v-list-item-subtitle
+                  >Only show related ORKs</v-list-item-subtitle
+                >
+              </v-list-item-content>
+            </template>
+          </v-list-item>
+
+          <v-subheader>Display Settings</v-subheader>
+
+          
+          <v-list-item value="show-id" dense>
+            <template v-slot:default="{ active }">
+              <v-list-item-action>
+                <v-checkbox :input-value="active" color="primary"></v-checkbox>
+              </v-list-item-action>
+
+              <v-list-item-content>
+                <v-list-item-title>ID</v-list-item-title>
+                <v-list-item-subtitle
+                  >Show OKR ID</v-list-item-subtitle
+                >
+              </v-list-item-content>
+            </template>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
+
+      <template v-slot:append>
+        <div class="pa-2">
+          <v-btn block v-if="user" depressed @click="fullLogout">
+            Logout
+          </v-btn>
+        </div>
+      </template>
+    </v-navigation-drawer>
+
     <v-app-bar app color="primary" dark dense>
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+
       <v-toolbar-title>NDIT OKRs</v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -35,37 +87,24 @@
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
-
-      <v-checkbox
-        v-model="cbRelated"
-        :label="`Filter Related`"
-        dense
-        hide-details="true"
-      ></v-checkbox>
-      {{ message }}
-      <v-spacer></v-spacer>
-      <v-btn v-if="user" depressed @click="fullLogout">
-        <span>Logout</span>
-      </v-btn>
     </v-app-bar>
 
     <v-main>
       <div v-if="error">
         {{ error }}
       </div>
-
       <template v-if="!user && !error">
         <Login v-if="!user && !error" @loginComplete="updateUser" />
       </template>
       <template v-else>
         <template v-if="modeTable">
-          <Table :okrs="okrs" :teams="teams" />
+          <Table :okrs="okrs" :teams="teams" :settings="settings" />
         </template>
         <template v-else>
           <Chart v-if="!modeTable" />
           <ChartButtons v-if="!modeTable" />
-          <ChartDetails v-if="!modeTable" />
         </template>
+        <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
     </v-main>
   </v-app>
@@ -78,7 +117,7 @@ import graph from "./services/graph";
 import Login from "./components/Login";
 import Chart from "./components/Chart";
 import ChartButtons from "./components/ChartButtons";
-import ChartDetails from "./components/ChartDetails";
+import Details from "./components/Details";
 import Table from "./components/Table";
 
 export default {
@@ -88,7 +127,7 @@ export default {
     Login,
     Chart,
     ChartButtons,
-    ChartDetails,
+    Details,
     Table,
   },
 
@@ -107,28 +146,34 @@ export default {
   destroyed() {},
 
   data: () => ({
-    modeTable: true,
-    user: {},
-    accessToken: "",
-    message: "",
-    cbRelated: true,
+    // SP Data
+    periods: [],
     teams: [],
     okrs: [],
-    //selected: "",
-    selectedOKR: [],
+    // Auth Data
+    user: {},
+    // accessToken: "",
+    // UI Data
+    drawer: null,
+    settings: ["filter-related"],
+    modeTable: true,
+    selectedOKR: null,
+    selectedTeam: [],
+    selectedPeriod: "1",
+    message: "",
+    //cbRelated: true,
+    detailsVisible: false,
+    // btnDetailsVisible: false,
+    // Highlighing
+    highlightedTeams: [],
     refOKRs: [],
     refOKRsX: [],
     supOKRs: [],
     supOKRsX: [],
+    // Chart Data
     chart: null,
     chart_index: 0,
     chart_compact: 0,
-    selectedTeam: [],
-    periods: [],
-    selectedPeriod: "1",
-    sheet: false,
-    btnDetailsVisible: false,
-    highlightedTeams: [],
     // Any errors
     error: "",
   }),
@@ -182,7 +227,7 @@ export default {
       const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
       this.okrs = await graph.getList(
         okrsListId,
-        "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnerLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,CoOwner,Tags,ReferenceLookupId",
+        "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
         `fields/Period0LookupId eq '${this.selectedPeriod}'`
       );
 
@@ -191,16 +236,18 @@ export default {
       });
     },
 
-    setSelected: function (_id) {
+    setSelected: function (_id, refresh = false) {
       // console.log(`setSelected ${_id}`);
       // console.log(id + " " + this.selectedOKR["ID"]);
-      if (this.selectedOKR && this.selectedOKR["id"] == _id) {
+
+      // this.detailsVisible = true; // Open detail sheet
+
+      if (this.selectedOKR && this.selectedOKR["id"] == _id && !refresh) {
         this.resetSelected();
       } else {
         this.resetSelected();
         // console.log(this.okrs);
         // console.log(id);
-        // this.sheet = true; // Open detail sheet
 
         this.selectedOKR = this.okrs.find(({ id }) => id == _id);
         // console.log("selectedOKR: " + this.selectedOKR);
@@ -284,14 +331,18 @@ export default {
             ) {
               Vue.set(okr, "highlightClass", "okr-supporting-x");
             } else {
-              if (this.cbRelated) {
+              if (this.settings.includes("filter-related")) {
                 Vue.set(okr, "highlightClass", "okr-hidden");
                 Vue.set(okr, "shown", false);
               }
             }
 
             // show parent Obj if KR is shown
-            if (okr.shown && okr.Category == "KR" && this.cbRelated) {
+            if (
+              okr.shown &&
+              okr.Category == "KR" &&
+              this.settings.includes("filter-related")
+            ) {
               var parentObj = this.okrs.find(
                 (o) =>
                   o["TeamLookupId"] == okr["TeamLookupId"] &&
@@ -314,7 +365,6 @@ export default {
               Vue.set(team, "displayClass", "table-ork-team-hidden");
             }
           });
-
           this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
         } else {
           const { allNodes } = this.chart.getChartState();
@@ -399,7 +449,7 @@ export default {
     },
     scrollToTeam: async function (team) {
       console.log("scrollToTeam " + team);
-      await this.$nextTick()
+      await this.$nextTick();
       var element = document.getElementById("team-" + team);
       var top = element.offsetTop;
       window.scrollTo(0, top);
@@ -424,15 +474,17 @@ export default {
         this.chart.render();
       }
     },
-    cbRelated: function (newValue) {
-      if (this.modeTable) {
-        //
-      } else {
-        console.log(newValue);
 
-        const { allNodes } = this.chart.getChartState();
+    settings: function (newValue) {
+      console.log("watch settings : " + newValue);
 
-        if (newValue) {
+      if (newValue.includes("filter-related")) {
+        if (this.modeTable) {
+          if (this.selectedOKR) {
+            this.setSelected(this.selectedOKR.id, true);
+          }
+        } else {
+          const { allNodes } = this.chart.getChartState();
           allNodes.forEach((d) => {
             if (this.highlightedTeams.includes(d.data.id)) {
               d.data._expanded = true;
@@ -442,27 +494,33 @@ export default {
               d.data._related = false;
             }
           });
+        }
+      } else {
+        if (this.modeTable) {
+          if (this.selectedOKR) {
+            this.setSelected(this.selectedOKR.id, true);
+          }
         } else {
+          const { allNodes } = this.chart.getChartState();
           allNodes.forEach((d) => {
             d.data._related = true;
           });
-        }
-
-        this.chart.render();
-      }
-    },
-    selectedOKR: function (newValue) {
-      // console.log("watch:selectedOKR - selected changed " + newValue);
-      if (this.modeTable) {
-        //
-      } else {
-        if (newValue != "") {
-          this.btnDetailsVisible = true;
-        } else {
-          this.btnDetailsVisible = false;
+          this.chart.render();
         }
       }
     },
+    // selectedOKR: function (newValue) {
+    //   // console.log("watch:selectedOKR - selected changed " + newValue);
+    //   if (this.modeTable) {
+    //     //
+    //   } else {
+    //     // if (newValue != "") {
+    //     //   this.btnDetailsVisible = true;
+    //     // } else {
+    //     //   this.btnDetailsVisible = false;
+    //     // }
+    //   }
+    // },
     user: function (newValue) {
       console.log("user changed " + newValue);
       if (newValue && newValue.size != 0) {

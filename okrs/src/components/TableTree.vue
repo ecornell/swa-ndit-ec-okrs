@@ -4,23 +4,24 @@
     <div class="table-okr-orks">
       <div
         v-for="okr in okrsByTeam(team.id)"
-        v-bind:key="okr.id"
-        v-on:click="selectedOKR(okr.id)"
-        v-bind:class="[okr.highlightClass]"
+        :key="okr['id']"
+        v-on:click="selectedOKR(okr['id'])"
+        v-bind:class="[okr['highlightClass']]"
       >
-        <div v-if="okr.Category == 'Obj'" class="table-okr-obj">
-          {{ okr.Category }} {{ okr._x0023_ }} - {{ okr.Title }}
+        <div v-if="okr['Category'] == 'Obj'" class="table-okr-obj">
+          <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
         </div>
-        <div v-else class="table-okr-kr" v-bind:key="okr.id">
-          {{ okr.Category }} {{ okr._x0023_ }} - {{ okr.Title }}
+        <div v-else class="table-okr-kr" v-bind:key="okr['id']">
+          <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
         </div>
       </div>
     </div>
     <TableTree
       v-for="t in team.Children"
-      v-bind:team="t"
-      v-bind:okrs="okrs"
-      v-bind:key="t.id"
+      :team="t"
+      :okrs="okrs"
+      :settings="settings"
+      :key="t['id']"      
     ></TableTree>
   </div>
 </template>
@@ -30,7 +31,7 @@ import TableTree from "./TableTree";
 
 export default {
   name: "TableTree",
-  props: ["team", "okrs"],
+  props: ["team", "okrs","settings"],
   components: {
     TableTree,
   },

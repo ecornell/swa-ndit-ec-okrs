@@ -4,6 +4,7 @@
       v-for="team in heirarchyTeams"
       v-bind:team="team"
       v-bind:okrs="okrs"
+      v-bind:settings="settings"
       v-bind:key="team.id"
     ></TableTree>
   </v-container>
@@ -13,7 +14,7 @@
 import TableTree from "./TableTree";
 
 export default {
-  props: ["okrs", "teams"],
+  props: ["okrs", "teams", "settings"],
 
   components: {
     TableTree,
