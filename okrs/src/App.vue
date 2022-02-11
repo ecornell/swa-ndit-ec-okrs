@@ -58,12 +58,15 @@
         <Login v-if="!user && !error" @loginComplete="updateUser" />
       </template>
       <template v-else>
-        <Table v-if="modeTable" :okrs="okrs" :teams="teams" />
-        <Chart v-if="!modeTable" />
-        <ChartButtons v-if="!modeTable" />
-        <ChartDetails v-if="!modeTable"/>
+        <template v-if="modeTable">
+          <Table :okrs="okrs" :teams="teams" />
+        </template>
+        <template v-else>
+          <Chart v-if="!modeTable" />
+          <ChartButtons v-if="!modeTable" />
+          <ChartDetails v-if="!modeTable" />
+        </template>
       </template>
-
     </v-main>
   </v-app>
 </template>
@@ -100,10 +103,6 @@ export default {
       this.error =
         "VUE_APP_CLIENT_ID is not set, the app will not function! 😥";
     }
-
-    //
-
-    //this.loadData();
   },
 
   destroyed() {},
@@ -150,7 +149,6 @@ export default {
       this.teams = [];
       this.okrs = [];
       this.periods = [];
-    
     },
     // OKRs
     async loadData() {
@@ -159,6 +157,22 @@ export default {
         teamsListId,
         "id,Title,ShortName,ParentLookupId"
       );
+
+      this.teams = this.teams.sort((a, b) => {
+        if (a.id == 1) {
+          return -1;
+        }
+        if (b.id == 1) {
+          return 1;
+        }
+        if (a.Title < b.Title) {
+          return -1;
+        }
+        if (a.Title > b.Title) {
+          return 1;
+        }
+        return 0;
+      });
 
       const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
       this.periods = await graph.getList(
@@ -195,9 +209,18 @@ export default {
         this.refOKRs = this.okrs.filter(
           ({ id }) => id == this.selectedOKR.ReferenceLookupId
         );
+        this.refOKRsX = this.findRefOKRsX(this.refOKRs);
+        console.log("this.refOKRsX");
+        console.log(this.refOKRsX);
+
+        //
+
         this.supOKRs = this.okrs.filter(
           ({ ReferenceLookupId }) => ReferenceLookupId == _id
         );
+        this.supOKRsX = this.findSupOKRsX(this.supOKRs);
+        console.log("this.supOKRsX");
+        console.log(this.supOKRsX);
 
         // Identify the teams that are related to this OKR
         this.highlightedTeams = [];
@@ -207,24 +230,38 @@ export default {
             this.highlightedTeams.push(o["TeamLookupId"]);
           }
         });
+        this.refOKRsX.forEach((x) => {
+          if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
+            this.highlightedTeams.push(x.okr["TeamLookupId"]);
+          }
+        });
         this.supOKRs.forEach((o) => {
           if (!this.highlightedTeams.includes(o["TeamLookupId"])) {
             this.highlightedTeams.push(o["TeamLookupId"]);
           }
         });
+        this.supOKRsX.forEach((x) => {
+          if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
+            this.highlightedTeams.push(x.okr["TeamLookupId"]);
+          }
+        });
         let tempList = [...this.highlightedTeams];
         tempList.forEach((t) => {
-          let parentTeams = this._getParentTeams(t);
-          parentTeams.forEach((p) => {
-            if (!this.highlightedTeams.includes(p)) {
-              this.highlightedTeams.push(p);
-            }
-          });
+          console.log(t);
+          if (t) {
+            let parentTeams = this._getParentTeams(t);
+            parentTeams.forEach((p) => {
+              if (!this.highlightedTeams.includes(p)) {
+                this.highlightedTeams.push(p);
+              }
+            });
+          }
         });
 
         //
 
         if (this.selectedOKR) {
+          // loop thru all okr and set display state
           this.okrs.forEach((okr) => {
             if (okr["id"] == this.selectedOKR["id"]) {
               Vue.set(okr, "highlightClass", "okr-selected");
@@ -234,10 +271,20 @@ export default {
             ) {
               Vue.set(okr, "highlightClass", "okr-referenced");
             } else if (
+              this.refOKRsX &&
+              this.refOKRsX.some((x) => x.okr.id == okr["id"])
+            ) {
+              Vue.set(okr, "highlightClass", "okr-referenced-x");
+            } else if (
               this.supOKRs &&
               this.supOKRs.some((o) => o.id == okr["id"])
             ) {
               Vue.set(okr, "highlightClass", "okr-supporting");
+            } else if (
+              this.supOKRsX &&
+              this.supOKRsX.some((x) => x.okr.id == okr["id"])
+            ) {
+              Vue.set(okr, "highlightClass", "okr-supporting-x");
             } else {
               if (this.cbRelated) {
                 Vue.set(okr, "highlightClass", "okr-hidden");
@@ -252,7 +299,7 @@ export default {
                   o["TeamLookupId"] == okr["TeamLookupId"] &&
                   o["_x0023_"] == okr["_x0023_"].toString().split(".")[0]
               );
-              console.log("Show parent:" + parentObj.id);
+              // console.log("Show parent:" + parentObj.id);
               if (parentObj) {
                 Vue.set(okr, "shown", true);
                 if (parentObj.highlightClass == "okr-hidden") {
@@ -316,6 +363,45 @@ export default {
         });
         this.chart.render();
       }
+    },
+    findSupOKRsX: function (list, depth = 0) {
+      let supOKRsX = [];
+      list.forEach((o) => {
+        let x = this.okrs.filter(
+          ({ ReferenceLookupId }) => ReferenceLookupId == o.id
+        );
+        if (x && x.length > 0) {
+          x.forEach((io) => {
+            supOKRsX = supOKRsX.concat([{ okr: io, depth: depth }]);
+          });
+
+          let children = this.findSupOKRsX(x, depth + 1);
+          if (children && children.length > 0) {
+            supOKRsX = supOKRsX.concat(children);
+          }
+        }
+      });
+      return supOKRsX;
+    },
+    findRefOKRsX: function (list, depth = 0) {
+      let refOKRsX = [];
+      list.forEach((o) => {
+        let x = this.okrs.filter(({ id }) => id == o.ReferenceLookupId);
+
+        console.log(x);
+
+        if (x && x.length > 0) {
+          x.forEach((io) => {
+            refOKRsX = refOKRsX.concat({ okr: io, depth: depth });
+          });
+
+          let parent = this.findRefOKRsX(x, depth + 1);
+          if (parent && parent.length > 0) {
+            refOKRsX = refOKRsX.concat(parent);
+          }
+        }
+      });
+      return refOKRsX;
     },
   },
 
