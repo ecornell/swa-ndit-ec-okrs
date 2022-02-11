@@ -1,6 +1,23 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" app>
+      <v-subheader>Paremeters</v-subheader>
+
+      <v-list subheader sinlge-line flat>
+        <v-select
+          v-model="selectedPeriod"
+          :items="periods"
+          dense
+          auto-select-first
+          label="OKR Period"
+          item-text="Title"
+          item-value="id"
+          outlined
+          hint="Select a period"
+          hide-details="false"
+          style="margin: 8px 4px 0 8px"
+        ></v-select>
+      </v-list>
 
       <v-subheader>Filters</v-subheader>
 
@@ -15,7 +32,7 @@
               <v-list-item-content>
                 <v-list-item-title>Filter Related</v-list-item-title>
                 <v-list-item-subtitle
-                  >Only show related ORKs</v-list-item-subtitle
+                  >Only show related OKRs</v-list-item-subtitle
                 >
               </v-list-item-content>
             </template>
@@ -23,7 +40,6 @@
 
           <v-subheader>Display Settings</v-subheader>
 
-          
           <v-list-item value="show-id" dense>
             <template v-slot:default="{ active }">
               <v-list-item-action>
@@ -32,9 +48,7 @@
 
               <v-list-item-content>
                 <v-list-item-title>ID</v-list-item-title>
-                <v-list-item-subtitle
-                  >Show OKR ID</v-list-item-subtitle
-                >
+                <v-list-item-subtitle>Show OKR ID</v-list-item-subtitle>
               </v-list-item-content>
             </template>
           </v-list-item>
@@ -50,27 +64,12 @@
       </template>
     </v-navigation-drawer>
 
-    <v-app-bar app color="primary" dark dense>
+    <v-app-bar app color="primary" dark dense style="height:52px;padding-top:2px;">
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <v-toolbar-title>NDIT OKRs</v-toolbar-title>
+      <v-toolbar-title class="d-none d-sm-block">NDIT OKRs</v-toolbar-title>
 
       <v-spacer></v-spacer>
-
-      <v-select
-        v-model="selectedPeriod"
-        :items="periods"
-        dense
-        auto-select-first
-        label="Period"
-        item-text="Title"
-        item-value="id"
-        outlined
-        single-line
-        hint="Select a period"
-        hide-details="true"
-        style="width: 60px; margin-right: 10px"
-      ></v-select>
 
       <v-autocomplete
         v-model="selectedTeam"
@@ -81,12 +80,12 @@
         auto-select-first
         label="Team"
         outlined
-        single-line
         hint="Select a team"
         hide-details="true"
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
+      
     </v-app-bar>
 
     <v-main>
