@@ -100,8 +100,7 @@ export default {
       this.user = auth.user();
       console.log(`configured ${auth.isConfigured()}`);
     } else {
-      this.error =
-        "VUE_APP_CLIENT_ID is not set, the app will not function! 😥";
+      this.error = "VUE_APP_CLIENT_ID is not set";
     }
   },
 
@@ -115,7 +114,7 @@ export default {
     cbRelated: true,
     teams: [],
     okrs: [],
-    selected: "",
+    //selected: "",
     selectedOKR: [],
     refOKRs: [],
     refOKRsX: [],
@@ -210,8 +209,8 @@ export default {
           ({ id }) => id == this.selectedOKR.ReferenceLookupId
         );
         this.refOKRsX = this.findRefOKRsX(this.refOKRs);
-        console.log("this.refOKRsX");
-        console.log(this.refOKRsX);
+        // console.log("this.refOKRsX");
+        // console.log(this.refOKRsX);
 
         //
 
@@ -219,8 +218,8 @@ export default {
           ({ ReferenceLookupId }) => ReferenceLookupId == _id
         );
         this.supOKRsX = this.findSupOKRsX(this.supOKRs);
-        console.log("this.supOKRsX");
-        console.log(this.supOKRsX);
+        // console.log("this.supOKRsX");
+        // console.log(this.supOKRsX);
 
         // Identify the teams that are related to this OKR
         this.highlightedTeams = [];
@@ -247,7 +246,6 @@ export default {
         });
         let tempList = [...this.highlightedTeams];
         tempList.forEach((t) => {
-          console.log(t);
           if (t) {
             let parentTeams = this._getParentTeams(t);
             parentTeams.forEach((p) => {
@@ -316,6 +314,8 @@ export default {
               Vue.set(team, "displayClass", "table-ork-team-hidden");
             }
           });
+
+          this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
         } else {
           const { allNodes } = this.chart.getChartState();
           allNodes.forEach((d) => {
@@ -351,7 +351,6 @@ export default {
         this.teams.forEach((team) => {
           Vue.set(team, "displayClass", "");
         });
-
         this.okrs.forEach((okr) => {
           Vue.set(okr, "highlightClass", "");
           Vue.set(okr, "shown", true);
@@ -374,7 +373,6 @@ export default {
           x.forEach((io) => {
             supOKRsX = supOKRsX.concat([{ okr: io, depth: depth }]);
           });
-
           let children = this.findSupOKRsX(x, depth + 1);
           if (children && children.length > 0) {
             supOKRsX = supOKRsX.concat(children);
@@ -387,14 +385,10 @@ export default {
       let refOKRsX = [];
       list.forEach((o) => {
         let x = this.okrs.filter(({ id }) => id == o.ReferenceLookupId);
-
-        console.log(x);
-
         if (x && x.length > 0) {
           x.forEach((io) => {
             refOKRsX = refOKRsX.concat({ okr: io, depth: depth });
           });
-
           let parent = this.findRefOKRsX(x, depth + 1);
           if (parent && parent.length > 0) {
             refOKRsX = refOKRsX.concat(parent);
@@ -402,6 +396,13 @@ export default {
         }
       });
       return refOKRsX;
+    },
+    scrollToTeam: async function (team) {
+      console.log("scrollToTeam " + team);
+      await this.$nextTick()
+      var element = document.getElementById("team-" + team);
+      var top = element.offsetTop;
+      window.scrollTo(0, top);
     },
   },
 
@@ -411,9 +412,7 @@ export default {
 
       if (this.modeTable) {
         console.log("watch selectedTeam : " + newValue);
-        var element = document.getElementById("team-" + newValue);
-        var top = element.offsetTop;
-        window.scrollTo(0, top);
+        this.scrollToTeam(newValue);
       } else {
         this.chart.setExpanded(newValue).render();
         this.chart.setCentered(newValue).render();
@@ -473,3 +472,5 @@ export default {
   },
 };
 </script>
+
+
