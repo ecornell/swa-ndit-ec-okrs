@@ -2,9 +2,7 @@
 // Copyright (c) Ben Coleman, 2021
 // Licensed under the MIT License.
 //
-// Drop in MSAL.js 2.x service wrapper & helper for SPAs
-//   v2.1.0 - Ben Coleman 2019
-//   Updated 2021 - Switched to @azure/msal-browser
+//  https://github.com/Azure-Samples/ms-identity-javascript-v2/blob/master/app/authRedirect.js
 // ----------------------------------------------------------------------------
 
 import * as msal from '@azure/msal-browser'

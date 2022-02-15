@@ -88,6 +88,7 @@
         outlined
         hint="Select a team"
         hide-details="true"
+        @change="updateSelectedTeam"
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
@@ -98,7 +99,7 @@
         {{ error }}
       </div>
       <template v-if="!user && !error">
-        <Login v-if="!user && !error"/>
+        <Login v-if="!user && !error" />
       </template>
       <template v-else>
         <template v-if="modeTable">
@@ -137,18 +138,20 @@ export default {
 
   created() {
     // Basic setup of MSAL helper with client id, or give up
-
     if (process.env.VUE_APP_CLIENT_ID) {
       auth.configure(process.env.VUE_APP_CLIENT_ID, this);
       // Restore any cached or saved local user
-       this.user = auth.user();
-       console.log(`configured ${auth.isConfigured()}`);
+      this.user = auth.user();
+      console.log(`configured ${auth.isConfigured()}`);
     } else {
       this.error = "VUE_APP_CLIENT_ID is not set";
     }
+    window.addEventListener("scroll", this.handleScroll);
   },
 
-  destroyed() {},
+  destroyed() {
+    window.removeEventListener("scroll", this.handleScroll);
+  },
 
   data: () => ({
     // SP Data
@@ -166,6 +169,7 @@ export default {
     selectedPeriod: "1",
     message: "",
     detailsVisible: false,
+    windowPosition: 0,
     // Highlighing
     highlightedTeams: [],
     refOKRs: [],
@@ -238,7 +242,7 @@ export default {
       });
     },
 
-    setSelected: function (_id, refresh = false) {
+    setSelected(_id, refresh = false) {
       // console.log(`setSelected ${_id}`);
       // console.log(id + " " + this.selectedOKR["ID"]);
 
@@ -384,7 +388,7 @@ export default {
         }
       }
     },
-    _getParentTeams: function (tId, parentTeams = []) {
+    _getParentTeams(tId, parentTeams = []) {
       //console.log("_getParentTeams " + tId + " : " + parentTeams);
       let t = this.teams.filter(({ id }) => id == tId)[0];
       let pT = t["ParentLookupId"];
@@ -394,7 +398,7 @@ export default {
       }
       return parentTeams;
     },
-    resetSelected: function () {
+    resetSelected() {
       this.selectedOKR = "";
       this.refOKRs = [];
       this.supOKRs = [];
@@ -415,7 +419,7 @@ export default {
         this.chart.render();
       }
     },
-    findSupOKRsX: function (list, depth = 0) {
+    findSupOKRsX(list, depth = 0) {
       let supOKRsX = [];
       list.forEach((o) => {
         let x = this.okrs.filter(
@@ -433,7 +437,7 @@ export default {
       });
       return supOKRsX;
     },
-    findRefOKRsX: function (list, depth = 0) {
+    findRefOKRsX (list, depth = 0) {
       let refOKRsX = [];
       list.forEach((o) => {
         let x = this.okrs.filter(({ id }) => id == o.ReferenceLookupId);
@@ -449,21 +453,22 @@ export default {
       });
       return refOKRsX;
     },
-    scrollToTeam: async function (team) {
+    async scrollToTeam(team) {
       console.log("scrollToTeam " + team);
-      await this.$nextTick();
-      var element = document.getElementById("team-" + team);
-      var top = element.offsetTop - 10;
-      window.scrollTo(0, top);
+      if (team) {
+        await this.$nextTick();
+        var element = document.getElementById("team-" + team);
+        this.windowPosition = element.offsetTop - 10;
+        window.scrollTo(0, this.windowPosition);
+      }
     },
-  },
+    updateSelectedTeam(newValue) {
+      console.log("updateSelectedTeam ", newValue);
 
-  watch: {
-    selectedTeam: function (newValue) {
       this.resetSelected();
 
       if (this.modeTable) {
-        console.log("watch selectedTeam : " + newValue);
+        console.log("updateSelectedTeam: " + newValue);
         this.scrollToTeam(newValue);
       } else {
         this.chart.setExpanded(newValue).render();
@@ -476,6 +481,34 @@ export default {
         this.chart.render();
       }
     },
+    handleScroll() {
+      if (this.windowPosition != window.pageYOffset) {
+        this.selectedTeam = null;
+      }
+    },
+  },
+
+  watch: {
+    // selectedTeam: function (newValue) {
+
+    //   this.updateSelectedTeam(newValue);
+
+    //   // this.resetSelected();
+
+    //   // if (this.modeTable) {
+    //   //   console.log("watch selectedTeam : " + newValue);
+    //   //   this.scrollToTeam(newValue);
+    //   // } else {
+    //   //   this.chart.setExpanded(newValue).render();
+    //   //   this.chart.setCentered(newValue).render();
+    //   //   const attrs = this.chart.getChartState();
+    //   //   const node = attrs.allNodes.filter(
+    //   //     ({ data }) => attrs.nodeId(data) == newValue
+    //   //   )[0];
+    //   //   this.chart.fit({ animate: true, nodes: [node], scale: true });
+    //   //   this.chart.render();
+    //   // }
+    // },
 
     settings: function (newValue) {
       console.log("watch settings : " + newValue);

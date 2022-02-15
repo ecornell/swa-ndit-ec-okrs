@@ -1,9 +1,6 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Ben Coleman, 2020
 // Licensed under the MIT License.
-//
-// Set of methods to call the beta Microsoft Graph API, using REST and fetch
-// Requires auth.js
 // ----------------------------------------------------------------------------
 
 import auth from './auth'
@@ -105,10 +102,6 @@ export default {
         return accessToken
     }
 }
-
-
-
-
 
 //
 // Common fetch wrapper (private)
