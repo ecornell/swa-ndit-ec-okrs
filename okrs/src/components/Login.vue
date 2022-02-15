@@ -29,12 +29,11 @@ export default {
   methods: {
     async doLogin() {
       try {
-        await auth.login();
-        this.$emit("loginComplete");
+        auth.login();
       } catch (err) {
         this.error = err.toString();
       }
-    },
+    },    
   },
 };
 </script>

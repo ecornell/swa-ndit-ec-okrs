@@ -16,62 +16,9 @@ export default {
     //
     // Configure with clientId or empty string/null to set in "demo" mode
     //
-    async configure(clientId, enableDummyUser = true) {
+    async configure(clientId, app = null) {
         // Can only call configure once
         if (msalApp) {
-            return
-        }
-
-        // If no clientId provided & enableDummyUser then create a mock MSAL UserAgentApplication
-        // Allows us to run without Azure AD for demos & local dev
-        if (!clientId && enableDummyUser) {
-            console.log('### Azure AD sign-in: disabled. Will run in demo mode with dummy demo@example.net account')
-
-            const dummyUser = {
-                accountIdentifier: 'e11d4d0c-1c70-430d-a644-aed03a60e059',
-                homeAccountIdentifier: '',
-                username: 'demo@example.net',
-                name: 'Demo User',
-                idToken: null,
-                sid: '',
-                environment: '',
-                idTokenClaims: {
-                    tid: 'fake-tenant'
-                }
-            }
-
-            // Stub out all the functions we call and return static dummy user where required
-            // Use localStorage to simulate MSAL caching and logging out
-            msalApp = {
-                config: {
-                    auth: {
-                        clientId: null
-                    }
-                },
-
-                loginPopup() {
-                    localStorage.setItem('dummyAccount', JSON.stringify(dummyUser))
-                    return new Promise((resolve) => resolve())
-                },
-                logout() {
-                    localStorage.removeItem('dummyAccount')
-                    window.location.href = '/'
-                    return new Promise((resolve) => resolve())
-                },
-                acquireTokenSilent() {
-                    return new Promise((resolve) => resolve({
-                        accessToken: '1234567890'
-                    }))
-                },
-                cacheStorage: {
-                    clear() {
-                        localStorage.removeItem('dummyAccount')
-                    }
-                },
-                getAllAccounts() {
-                    return [JSON.parse(localStorage.getItem('dummyAccount'))]
-                }
-            }
             return
         }
 
@@ -104,8 +51,22 @@ export default {
 
         // Create our shared/static MSAL app object
         msalApp = new msal.PublicClientApplication(config)
-    },
 
+        function loginHandler(response) {
+            console.log("loginHandler response:", response);
+            // console.log("app", app);
+            if (response !== null) {
+                if (app) {
+                    app.updateUser();
+                }
+            }
+        }
+        msalApp.handleRedirectPromise()
+            .then(loginHandler)
+            .catch((error) => {
+                console.error(error);
+            });
+    },
     //
     // Return the configured client id
     //
@@ -120,16 +81,18 @@ export default {
     //
     // Login a user with a popup
     //
-    async login(scopes = ['user.read', 'openid', 'profile', 'email', 'Sites.ReadWrite.All']) {
+    login(scopes = ['user.read', 'openid', 'profile', 'email', 'Sites.ReadWrite.All']) {
         if (!msalApp) {
             return
         }
 
-        //const LOGIN_SCOPES = ['user.read', 'openid', 'profile', 'email']
-        await msalApp.loginPopup({
+        // https://azuread.github.io/microsoft-authentication-library-for-js/ref/modules/_azure_msal_browser.html#redirectrequest
+        let loginRequest = {
             scopes,
-            prompt: 'select_account'
-        })
+            //prompt: 'select_account'
+        }
+        msalApp.loginRedirect(loginRequest);
+
     },
 
     //
@@ -140,18 +103,24 @@ export default {
             return
         }
 
-        msalApp.logoutPopup()
+        const logoutRequest = {
+            // account: msalApp.getAccountByUsername(username),
+            postLogoutRedirectUri: msalApp.config.auth.redirectUri,
+        };
+
+        msalApp.logoutRedirect(logoutRequest);
     },
 
     //
     // Call to get user, probably cached and stored locally by MSAL
     //
     user() {
+        // console.log('### Getting user details', msalApp)
         if (!msalApp) {
             return null
         }
-
         const currentAccounts = msalApp.getAllAccounts()
+        // console.log('### Current accounts', currentAccounts)
         if (!currentAccounts || currentAccounts.length === 0) {
             // No user signed in
             return null
@@ -166,14 +135,10 @@ export default {
     // Call through to acquireTokenSilent or acquireTokenPopup
     //
     async acquireToken(scopes = ['user.read']) {
+        console.log("### Acquiring token")
         if (!msalApp) {
             return null
         }
-
-        const acc = msalApp.getAllAccounts()[0];
-
-        console.log(acc + ":" + this.user())
-
 
         // Set scopes for token request
         const accessTokenRequest = {
@@ -221,4 +186,5 @@ export default {
     isConfigured() {
         return msalApp != null
     }
+
 }

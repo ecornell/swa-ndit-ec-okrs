@@ -64,7 +64,13 @@
       </template>
     </v-navigation-drawer>
 
-    <v-app-bar app color="primary" dark dense style="height:52px;padding-top:2px;">
+    <v-app-bar
+      app
+      color="primary"
+      dark
+      dense
+      style="height: 52px; padding-top: 2px"
+    >
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title class="d-none d-sm-block">NDIT OKRs</v-toolbar-title>
@@ -85,7 +91,6 @@
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
-      
     </v-app-bar>
 
     <v-main>
@@ -93,7 +98,7 @@
         {{ error }}
       </div>
       <template v-if="!user && !error">
-        <Login v-if="!user && !error" @loginComplete="updateUser" />
+        <Login v-if="!user && !error"/>
       </template>
       <template v-else>
         <template v-if="modeTable">
@@ -132,11 +137,12 @@ export default {
 
   created() {
     // Basic setup of MSAL helper with client id, or give up
+
     if (process.env.VUE_APP_CLIENT_ID) {
-      auth.configure(process.env.VUE_APP_CLIENT_ID, false);
+      auth.configure(process.env.VUE_APP_CLIENT_ID, this);
       // Restore any cached or saved local user
-      this.user = auth.user();
-      console.log(`configured ${auth.isConfigured()}`);
+       this.user = auth.user();
+       console.log(`configured ${auth.isConfigured()}`);
     } else {
       this.error = "VUE_APP_CLIENT_ID is not set";
     }
@@ -150,8 +156,7 @@ export default {
     teams: [],
     okrs: [],
     // Auth Data
-    user: {},
-    // accessToken: "",
+    user: null,
     // UI Data
     drawer: null,
     settings: ["filter-related"],
@@ -160,9 +165,7 @@ export default {
     selectedTeam: [],
     selectedPeriod: "1",
     message: "",
-    //cbRelated: true,
     detailsVisible: false,
-    // btnDetailsVisible: false,
     // Highlighing
     highlightedTeams: [],
     refOKRs: [],
@@ -187,11 +190,11 @@ export default {
       this.user = auth.user();
     },
     fullLogout() {
-      auth.logout();
       this.user = null;
       this.teams = [];
       this.okrs = [];
       this.periods = [];
+      auth.logout();
     },
     // OKRs
     async loadData() {
@@ -450,7 +453,7 @@ export default {
       console.log("scrollToTeam " + team);
       await this.$nextTick();
       var element = document.getElementById("team-" + team);
-      var top = element.offsetTop;
+      var top = element.offsetTop - 10;
       window.scrollTo(0, top);
     },
   },
