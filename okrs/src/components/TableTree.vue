@@ -9,10 +9,10 @@
         v-bind:class="[okr['highlightClass']]"
       >
         <div v-if="okr['Category'] == 'Obj'" class="table-okr-obj">
-          <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
+          {{ okr['related'] }} <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
         </div>
         <div v-else class="table-okr-kr" v-bind:key="okr['id']">
-          <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
+          {{ okr['related'] }} <span v-if="settings.includes('show-id')">{{ okr['id'] }}</span> {{ okr['Category'] }} {{ okr['_x0023_'] }} - {{ okr['Title'] }}
         </div>
       </div>
     </div>

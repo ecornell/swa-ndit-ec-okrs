@@ -1,23 +1,26 @@
 <template>
   <v-container>
-    <TableTree
+    <TableList
       v-for="team in heirarchyTeams"
       v-bind:team="team"
       v-bind:okrs="okrs"
       v-bind:settings="settings"
       v-bind:key="team.id"
-    ></TableTree>
+      :depth="1"
+    ></TableList>
   </v-container>
 </template>
 
 <script>
-import TableTree from "./TableTree";
+// import TableTree from "./TableTree";
+import TableList from "./TableList";
 
 export default {
   props: ["okrs", "teams", "settings"],
 
   components: {
-    TableTree,
+    // TableTree,
+    TableList,
   },
 
   data: () => ({
