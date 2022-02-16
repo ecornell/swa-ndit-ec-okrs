@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <div class="table-okr-section" :class="classSection()">
     <v-row
       class="table-okr-team"
       v-bind:class="[team.displayClass]"
@@ -15,7 +15,7 @@
       v-for="okr in okrsByTeam(team.id)"
       :key="okr['id']"
       v-on:click="selectedOKR(okr['id'])"
-      v-bind:class="[okr['classOkrRow']]"
+      :class="[okr['classOkrRow']]"
       dense
       class="table-okr-row"
     >
@@ -33,25 +33,25 @@
       <v-col cols="" :class="classTitle(okr)">{{ okr["Title"] }}</v-col>
       <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
     </v-row>
-    <TableTree
+    <TableList
       v-for="t in team.Children"
       :team="t"
       :okrs="okrs"
       :settings="settings"
       :key="t['id']"
       :depth="depth + 1"
-    ></TableTree>
-  </span>
+    ></TableList>
+  </div>
 </template>
 
 <script>
-import TableTree from "./TableTree";
+import TableList from "./TableList";
 
 export default {
-  name: "TableTree",
+  name: "TableList",
   props: ["team", "okrs", "settings", "depth"],
   components: {
-    TableTree,
+    TableList,
   },
   data() {
     return {
@@ -72,6 +72,9 @@ export default {
           return "table-okr-title-kr";
         }
       },
+      classSection: () => {
+        return "table-okr-section-" + this.depth;
+      },
     };
   },
   methods: {
@@ -89,19 +92,19 @@ export default {
       let related = okr["related"];
       if (related != null) {
         if (related == 0) {
-          return 'mdi-arrow-right';
+          return "mdi-arrow-right";
         } else if (related == 1) {
-          return 'mdi-chevron-up';
-        } else if (related == -1){
-          return 'mdi-chevron-down';
+          return "mdi-chevron-up";
+        } else if (related == -1) {
+          return "mdi-chevron-down";
         } else if (related == 2) {
-          return 'mdi-chevron-double-up';
-        } else if (related == -2){
-          return 'mdi-chevron-double-down';
+          return "mdi-chevron-double-up";
+        } else if (related == -2) {
+          return "mdi-chevron-double-down";
         } else if (related > 2) {
-          return 'mdi-chevron-triple-up';
+          return "mdi-chevron-triple-up";
         } else {
-          return 'mdi-chevron-triple-down';
+          return "mdi-chevron-triple-down";
         }
       }
     },
@@ -109,7 +112,7 @@ export default {
       if (this.depth == 1) {
         return team["Title"];
       } else {
-        return (". ".repeat(this.depth - 1)) +  team["Title"];
+        return ". ".repeat(this.depth - 1) + team["Title"];
       }
     },
     displayProgress: function (okr) {
@@ -119,15 +122,16 @@ export default {
         let progress = okr["Progress_x0025_"] * 100;
         return progress.toFixed(0) + "%";
       }
-    },    
-  }
-  };
+    },
+  },
+};
 </script>
 
 <style scoped>
 .table-okr-section {
-  margin: 5px 0 0 6px;
-  border-left: rgb(184, 181, 181) 2px solid;
+  /* margin: 5px 0 0 0;
+  padding: 0 0 0 4px;
+  border-left: #e7e7fd 2px solid; */
 }
 .table-okr-container {
   /* margin: 5px 0 0 6px; */
@@ -137,10 +141,11 @@ export default {
   margin: 0 0 0 10px;
 }
 .table-okr-team {
-  font-weight: bold;
-  background-color: #ebebeb;
+  font-weight: 500;
+  background-color: #f3f3ff;
   padding: 0 0 0 5px;
   color: #3e42bd;
+  line-height: 1.2;
 }
 .table-ork-team-hidden {
   display: none;
@@ -168,5 +173,30 @@ export default {
 }
 .table-okr-row:hover {
   background-color: #fffec3;
+}
+.table-okr-section-1 {
+  margin: 4px 0 0 -4px;
+  padding: 0 0 0 4px;
+  border-left: #e7e7fd 2px solid;
+}
+.table-okr-section-2 {
+  margin: 4px 0 0 -3px;
+  padding: 0 0 0 4px;
+  border-left: #c8c8ff 2px solid;
+}
+.table-okr-section-3 {
+  margin: 4px 0 0 -3px;
+  padding: 0 0 0 4px;
+  border-left: #a5a5f5 2px solid;
+}
+.table-okr-section-4 {
+  margin: 4px 0 0 -3px;
+  padding: 0 0 0 4px;
+  border-left: #6f6fef 2px solid;
+}
+.table-okr-section-5 {
+  margin: 4px 0 0 -3px;
+  padding: 0 0 0 4px;
+  border-left: #5454f7 2px solid;
 }
 </style>

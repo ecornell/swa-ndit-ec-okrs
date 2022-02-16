@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" app>
-      <v-subheader>Paremeters</v-subheader>
+      <v-subheader>Parameters</v-subheader>
 
       <v-list subheader sinlge-line flat>
         <v-select

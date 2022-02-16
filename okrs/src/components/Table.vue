@@ -1,5 +1,12 @@
 <template>
   <v-container>
+    <v-row dense class="blue-grey--text table-okr-header-row">
+      <v-col cols="1"></v-col>
+      <v-col cols="1" v-if="settings.includes('show-id')">ID</v-col>
+      <v-col cols="1">OKR-ID</v-col>
+      <v-col cols="" class="text-center" >Title</v-col>
+      <v-col cols="1">Progress</v-col>
+    </v-row>
     <TableList
       v-for="team in heirarchyTeams"
       v-bind:team="team"
@@ -12,20 +19,16 @@
 </template>
 
 <script>
-// import TableTree from "./TableTree";
-import TableList from "./TableList";
+import TableList from "./TableList"; 
 
 export default {
   props: ["okrs", "teams", "settings"],
 
   components: {
-    // TableTree,
     TableList,
   },
 
   data: () => ({
-    // error: "",
-    // data: [],
     heirarchyTeams: [],
   }),
 
@@ -43,22 +46,10 @@ export default {
 
   methods: {
     //
-    // async fetchGraphDetails() {
-    //   if (!this.user) {
-    //     return;
-    //   }
-    //   try {
-    //     // this.graphPhoto = await graph.getPhoto();
-    //     // const teamsListId ='a2968c6c-1a6a-4315-ae54-6197c6b6581a'
-    //     // this.teams = await graph.getList(teamsListId, 'id,Title,ShortName,ParentLookupId');
-    //     // console.log(this.teams);
-    //   } catch (err) {
-    //     this.error = err;
-    //   }
-    // },
     okrsByTeam: function (teamId) {
       return this.okrs.filter((okr) => okr.TeamLookupId == teamId);
     },
+    //
     listToTree(list) {
       let data = [...list];
       // console.log(data);
@@ -90,15 +81,18 @@ export default {
     },
   },
   mounted() {
-    //this.fetchGraphDetails();
-    
   },
   created: function () {
-    //this.heirarchyItems = this.listToTree(this.teams);
   },
 };
 
 </script>
 
 <style scoped>
+.table-okr-header-row {
+  border-bottom: 1px solid #cbcbcb;
+  line-height: .8;
+  font-weight: 300;
+  font-size: .9em;
+}
 </style>
