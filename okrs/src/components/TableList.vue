@@ -31,6 +31,7 @@
         >{{ okr["Category"] }} {{ okr["_x0023_"] }}</v-col
       >
       <v-col cols="" :class="classTitle(okr)">{{ okr["Title"] }}</v-col>
+      <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
     </v-row>
     <TableTree
       v-for="t in team.Children"
@@ -89,10 +90,18 @@ export default {
       if (related != null) {
         if (related == 0) {
           return 'mdi-arrow-right';
-        } else if (related > 0) {
+        } else if (related == 1) {
+          return 'mdi-chevron-up';
+        } else if (related == -1){
+          return 'mdi-chevron-down';
+        } else if (related == 2) {
           return 'mdi-chevron-double-up';
-        } else {
+        } else if (related == -2){
           return 'mdi-chevron-double-down';
+        } else if (related > 2) {
+          return 'mdi-chevron-triple-up';
+        } else {
+          return 'mdi-chevron-triple-down';
         }
       }
     },
@@ -101,6 +110,14 @@ export default {
         return team["Title"];
       } else {
         return (". ".repeat(this.depth - 1)) +  team["Title"];
+      }
+    },
+    displayProgress: function (okr) {
+      if (okr["Progress_x0025_"] == null) {
+        return "";
+      } else {
+        let progress = okr["Progress_x0025_"] * 100;
+        return progress.toFixed(0) + "%";
       }
     },    
   }
@@ -131,7 +148,7 @@ export default {
 
 .table-okr-cat-obj {
   font-weight: 500;
-  white-space: nowrap;
+  /* white-space: nowrap; */
   /* padding: 0 0 0 5px; */
 }
 .table-okr-cat-kr {
