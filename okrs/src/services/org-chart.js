@@ -42,7 +42,7 @@ export class OrgChart {
             connections: [],
             lastTransform: { x: 0, y: 0, k: 1 },
             nodeId: d => d.nodeId || d.id,
-            parentNodeId: d => d.parentNodeId || d.parentId,
+            parentNodeId: d => d.parentNodeId || d.parentId || d.ParentLookupId,  //EC - Added parentNodeId
             backgroundColor: 'none',
             zoomBehavior: null,
             defs: function (state, visibleConnections) {
@@ -1155,7 +1155,7 @@ export class OrgChart {
             while (parent) {
                 // Expand all current parent's children
                 if (parent._children) {
-                    parent.children = parent._children.filter(({ data }) => data._related);
+                    parent.children = parent._children.filter(({ data }) => data._related); // EC - filter out nodes without related
                 }
 
                 // Replace current parent holding object
@@ -1164,6 +1164,7 @@ export class OrgChart {
         }
 
         // Recursivelly do the same for collapsed nodes
+        // console.log(d.data.Title, d.data._expanded, d.data)
         if (d._children) {
             d._children.forEach((ch) => this.expandSomeNodes(ch));
         }
@@ -1220,7 +1221,7 @@ export class OrgChart {
             attrs.root.children.forEach((d) => this.collapse(d));
 
             // Collapse root if level is 0
-            if (attrs.expandLevel == 0) {
+            if (attrs.expandLevel == 1) { // EC - Change to collapse root node
                 attrs.root._children = attrs.root.children;
                 attrs.root.children = null;
             }

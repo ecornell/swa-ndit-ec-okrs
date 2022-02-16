@@ -92,6 +92,15 @@
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
+
+      <v-btn        
+        color="primary"
+        depressed
+        @click="changeMode"
+        style="margin-right: 8px">
+        Mode
+      </v-btn>
+
     </v-app-bar>
 
     <v-main>
@@ -106,8 +115,8 @@
           <Table :okrs="okrs" :teams="teams" :settings="settings" />
         </template>
         <template v-else>
-          <Chart v-if="!modeTable" />
-          <ChartButtons v-if="!modeTable" />
+          <Chart :okrs="okrs" :teams="teams" :settings="settings" :dataloaded="dataloaded" />
+          <ChartButtons />
         </template>
         <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
@@ -159,6 +168,7 @@ export default {
     periods: [],
     teams: [],
     okrs: [],
+    dataloaded: 0,
     // Auth Data
     user: null,
     // UI Data
@@ -241,6 +251,8 @@ export default {
       this.okrs.sort((a, b) => {
         return a["OKR_x002d_ID"] - b["OKR_x002d_ID"];
       });
+
+      this.dataloaded = this.dataloaded + 1;
     },
 
     setSelected(_id, refresh = false) {
@@ -262,18 +274,10 @@ export default {
 
         // console.log("selectedOKR: " + this.selectedOKR);
 
-        // this.refOKRs = this.okrs.filter(
-        //   ({ id }) => id == this.selectedOKR.ReferenceLookupId
-        // );
         this.refOKRsX = this.findRefOKRsX([this.selectedOKR]);
         // console.log("this.refOKRsX");
         // console.log(this.refOKRsX);
 
-        //
-
-        // let supOKRs = this.okrs.filter(
-        //    ({ ReferenceLookupId }) => ReferenceLookupId == _id
-        //  );
         this.supOKRsX = this.findSupOKRsX([this.selectedOKR]);
         // console.log("this.supOKRsX");
         // console.log(this.supOKRsX);
@@ -281,26 +285,19 @@ export default {
         // Identify the teams that are related to this OKR
         this.highlightedTeams = [];
         this.highlightedTeams.push(this.selectedOKR["TeamLookupId"]);
-        // this.refOKRs.forEach((o) => {
-        //   if (!this.highlightedTeams.includes(o["TeamLookupId"])) {
-        //     this.highlightedTeams.push(o["TeamLookupId"]);
-        //   }
-        // });
+
         this.refOKRsX.forEach((x) => {
           if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
             this.highlightedTeams.push(x.okr["TeamLookupId"]);
           }
         });
-        // this.supOKRs.forEach((o) => {
-        //   if (!this.highlightedTeams.includes(o["TeamLookupId"])) {
-        //     this.highlightedTeams.push(o["TeamLookupId"]);
-        //   }
-        // });
+
         this.supOKRsX.forEach((x) => {
           if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
             this.highlightedTeams.push(x.okr["TeamLookupId"]);
           }
         });
+
         let tempList = [...this.highlightedTeams];
         tempList.forEach((t) => {
           if (t) {
@@ -399,8 +396,8 @@ export default {
     },
     resetSelected() {
       this.selectedOKR = "";
-      // this.refOKRs = [];
-      this.supOKRs = [];
+      this.refOKRsX = [];
+      this.supOKRsX = [];
 
       if (this.modeTable) {
         this.teams.forEach((team) => {
@@ -485,6 +482,10 @@ export default {
         this.selectedTeam = null;
       }
     },
+    changeMode() {
+      this.modeTable = !this.modeTable;
+      //this.resetSelected();
+    },
   },
 
   watch: {
@@ -523,18 +524,6 @@ export default {
         }
       }
     },
-    // selectedOKR: function (newValue) {
-    //   // console.log("watch:selectedOKR - selected changed " + newValue);
-    //   if (this.modeTable) {
-    //     //
-    //   } else {
-    //     // if (newValue != "") {
-    //     //   this.btnDetailsVisible = true;
-    //     // } else {
-    //     //   this.btnDetailsVisible = false;
-    //     // }
-    //   }
-    // },
     user: function (newValue) {
       console.log("user changed " + newValue);
       if (newValue && newValue.size != 0) {

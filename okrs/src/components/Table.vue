@@ -3,7 +3,7 @@
     <v-row dense class="blue-grey--text table-okr-header-row">
       <v-col cols="1"></v-col>
       <v-col cols="1" v-if="settings.includes('show-id')">ID</v-col>
-      <v-col cols="1">OKR-ID</v-col>
+      <v-col cols="1">OKR #</v-col>
       <v-col cols="" class="text-center" >Title</v-col>
       <v-col cols="1">Progress</v-col>
     </v-row>
@@ -81,6 +81,7 @@ export default {
     },
   },
   mounted() {
+    console.log("Table - mounted");
   },
   created: function () {
   },
