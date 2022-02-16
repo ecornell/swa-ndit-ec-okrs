@@ -92,15 +92,6 @@
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
-
-      <v-btn        
-        color="primary"
-        depressed
-        @click="changeMode"
-        style="margin-right: 8px">
-        Mode
-      </v-btn>
-
     </v-app-bar>
 
     <v-main>
@@ -111,13 +102,7 @@
         <Login v-if="!user && !error" />
       </template>
       <template v-else>
-        <template v-if="modeTable">
-          <Table :okrs="okrs" :teams="teams" :settings="settings" />
-        </template>
-        <template v-else>
-          <Chart :okrs="okrs" :teams="teams" :settings="settings" :dataloaded="dataloaded" />
-          <ChartButtons />
-        </template>
+        <Table :okrs="okrs" :teams="teams" :settings="settings" />
         <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
     </v-main>
@@ -129,8 +114,6 @@ import Vue from "vue";
 import auth from "./services/auth";
 import graph from "./services/graph";
 import Login from "./components/Login";
-import Chart from "./components/Chart";
-import ChartButtons from "./components/ChartButtons";
 import Details from "./components/Details";
 import Table from "./components/Table";
 
@@ -139,8 +122,6 @@ export default {
 
   components: {
     Login,
-    Chart,
-    ChartButtons,
     Details,
     Table,
   },
@@ -174,29 +155,23 @@ export default {
     // UI Data
     drawer: null,
     settings: ["filter-related"],
-    modeTable: true,
     selectedOKR: null,
-    selectedTeam: [],
+    selectedTeam: null,
     selectedPeriod: "1",
     message: "",
     detailsVisible: false,
     windowPosition: 0,
-    // Highlighing
-    highlightedTeams: [],
-    //refOKRs: [],
+    // Related OKRs
+    relatedTeams: [],
     refOKRsX: [],
-    //supOKRs: [],
     supOKRsX: [],
-    // Chart Data
-    chart: null,
-    chart_index: 0,
-    chart_compact: 0,
     // Any errors
     error: "",
   }),
 
   mounted() {
     global.App = document.getElementById("app").__vue__;
+    document.title = "NDIT - OKRs";
   },
 
   methods: {
@@ -259,8 +234,6 @@ export default {
       // console.log(`setSelected ${_id}`);
       // console.log(id + " " + this.selectedOKR["ID"]);
 
-      // this.detailsVisible = true; // Open detail sheet
-
       if (this.selectedOKR && this.selectedOKR["id"] == _id && !refresh) {
         this.resetSelected();
       } else {
@@ -269,9 +242,7 @@ export default {
         // console.log(id);
 
         this.selectedOKR = this.okrs.find(({ id }) => id == _id);
-
-        this.selectedOKR["related"] = 0
-
+        this.selectedOKR["related"] = 0;
         // console.log("selectedOKR: " + this.selectedOKR);
 
         this.refOKRsX = this.findRefOKRsX([this.selectedOKR]);
@@ -283,28 +254,28 @@ export default {
         // console.log(this.supOKRsX);
 
         // Identify the teams that are related to this OKR
-        this.highlightedTeams = [];
-        this.highlightedTeams.push(this.selectedOKR["TeamLookupId"]);
+        this.relatedTeams = [];
+        this.relatedTeams.push(this.selectedOKR["TeamLookupId"]);
 
         this.refOKRsX.forEach((x) => {
-          if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
-            this.highlightedTeams.push(x.okr["TeamLookupId"]);
+          if (!this.relatedTeams.includes(x.okr["TeamLookupId"])) {
+            this.relatedTeams.push(x.okr["TeamLookupId"]);
           }
         });
 
         this.supOKRsX.forEach((x) => {
-          if (!this.highlightedTeams.includes(x.okr["TeamLookupId"])) {
-            this.highlightedTeams.push(x.okr["TeamLookupId"]);
+          if (!this.relatedTeams.includes(x.okr["TeamLookupId"])) {
+            this.relatedTeams.push(x.okr["TeamLookupId"]);
           }
         });
 
-        let tempList = [...this.highlightedTeams];
+        let tempList = [...this.relatedTeams];
         tempList.forEach((t) => {
           if (t) {
             let parentTeams = this._getParentTeams(t);
             parentTeams.forEach((p) => {
-              if (!this.highlightedTeams.includes(p)) {
-                this.highlightedTeams.push(p);
+              if (!this.relatedTeams.includes(p)) {
+                this.relatedTeams.push(p);
               }
             });
           }
@@ -316,22 +287,17 @@ export default {
           // loop thru all okr and set display state
           this.okrs.forEach((okr) => {
             if (okr["id"] == this.selectedOKR["id"]) {
-              // Vue.set(okr, "classOkrRow", "okr-selected");
+              //
             } else if (
               this.refOKRsX &&
               this.refOKRsX.some((x) => x.okr.id == okr["id"])
             ) {
-            //  Vue.set(okr, "classOkrRow", "okr-referenced-x");
-            // } else if (
-            //   this.supOKRs &&
-            //   this.supOKRs.some((o) => o.id == okr["id"])
-            // ) {
-            //   Vue.set(okr, "classOkrRow", "okr-supporting");
+              //
             } else if (
               this.supOKRsX &&
               this.supOKRsX.some((x) => x.okr.id == okr["id"])
             ) {
-              // Vue.set(okr, "classOkrRow", "okr-supporting-x");
+              //
             } else {
               if (this.settings.includes("filter-related")) {
                 Vue.set(okr, "classOkrRow", "okr-hidden");
@@ -361,27 +327,12 @@ export default {
           });
         }
 
-        if (this.modeTable) {
-          this.teams.forEach((team) => {
-            if (!this.highlightedTeams.includes(team["id"])) {
-              Vue.set(team, "displayClass", "table-ork-team-hidden");
-            }
-          });
-          this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
-        } else {
-          const { allNodes } = this.chart.getChartState();
-          allNodes.forEach((d) => {
-            if (this.highlightedTeams.includes(d.data.id)) {
-              d.data._expanded = true;
-              d.data._related = true;
-            } else {
-              d.data._expanded = false;
-              d.data._related = false;
-            }
-          });
-          this.chart.setCentered(this.selectedOKR["TeamLookupId"]);
-          this.chart.render();
-        }
+        this.teams.forEach((team) => {
+          if (!this.relatedTeams.includes(team["id"])) {
+            Vue.set(team, "displayClass", "table-ork-team-hidden");
+          }
+        });
+        this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
       }
     },
     _getParentTeams(tId, parentTeams = []) {
@@ -399,22 +350,14 @@ export default {
       this.refOKRsX = [];
       this.supOKRsX = [];
 
-      if (this.modeTable) {
-        this.teams.forEach((team) => {
-          Vue.set(team, "displayClass", "");
-        });
-        this.okrs.forEach((okr) => {
-          Vue.set(okr, "classOkrRow", "");
-          Vue.set(okr, "shown", true);
-          Vue.set(okr, "related", null);
-        });
-      } else {
-        const { allNodes } = this.chart.getChartState();
-        allNodes.forEach((d) => {
-          d.data._related = true;
-        });
-        this.chart.render();
-      }
+      this.teams.forEach((team) => {
+        Vue.set(team, "displayClass", "");
+      });
+      this.okrs.forEach((okr) => {
+        Vue.set(okr, "classOkrRow", "");
+        Vue.set(okr, "shown", true);
+        Vue.set(okr, "related", null);
+      });
     },
     findSupOKRsX(list, depth = 1) {
       let supOKRsX = [];
@@ -435,14 +378,14 @@ export default {
       });
       return supOKRsX;
     },
-    findRefOKRsX (list, depth = 1) {
+    findRefOKRsX(list, depth = 1) {
       let refOKRsX = [];
       list.forEach((o) => {
         let x = this.okrs.filter(({ id }) => id == o.ReferenceLookupId);
         if (x && x.length > 0) {
           x.forEach((io) => {
             refOKRsX = refOKRsX.concat({ okr: io, depth: depth });
-             io["related"] = -depth;
+            io["related"] = -depth;
           });
           let parent = this.findRefOKRsX(x, depth + 1);
           if (parent && parent.length > 0) {
@@ -464,63 +407,25 @@ export default {
     updateSelectedTeam(newValue) {
       // console.log("updateSelectedTeam ", newValue);
       this.resetSelected();
-      if (this.modeTable) {
-        this.scrollToTeam(newValue);
-      } else {
-        this.chart.setExpanded(newValue).render();
-        this.chart.setCentered(newValue).render();
-        const attrs = this.chart.getChartState();
-        const node = attrs.allNodes.filter(
-          ({ data }) => attrs.nodeId(data) == newValue
-        )[0];
-        this.chart.fit({ animate: true, nodes: [node], scale: true });
-        this.chart.render();
-      }
+      this.scrollToTeam(newValue);
     },
     handleScroll() {
       if (this.windowPosition != window.pageYOffset) {
         this.selectedTeam = null;
       }
     },
-    changeMode() {
-      this.modeTable = !this.modeTable;
-      //this.resetSelected();
-    },
   },
 
   watch: {
-
     settings: function (newValue) {
       console.log("watch settings : " + newValue);
-
       if (newValue.includes("filter-related")) {
-        if (this.modeTable) {
-          if (this.selectedOKR) {
-            this.setSelected(this.selectedOKR.id, true);
-          }
-        } else {
-          const { allNodes } = this.chart.getChartState();
-          allNodes.forEach((d) => {
-            if (this.highlightedTeams.includes(d.data.id)) {
-              d.data._expanded = true;
-              d.data._related = true;
-            } else {
-              d.data._expanded = false;
-              d.data._related = false;
-            }
-          });
+        if (this.selectedOKR) {
+          this.setSelected(this.selectedOKR.id, true);
         }
       } else {
-        if (this.modeTable) {
-          if (this.selectedOKR) {
-            this.setSelected(this.selectedOKR.id, true);
-          }
-        } else {
-          const { allNodes } = this.chart.getChartState();
-          allNodes.forEach((d) => {
-            d.data._related = true;
-          });
-          this.chart.render();
+        if (this.selectedOKR) {
+          this.setSelected(this.selectedOKR.id, true);
         }
       }
     },
@@ -533,5 +438,3 @@ export default {
   },
 };
 </script>
-
-

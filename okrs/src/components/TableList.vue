@@ -128,6 +128,10 @@ export default {
 </script>
 
 <style scoped>
+.okr-hidden {
+  display: none !important;
+}
+
 .table-okr-section {
   /* margin: 5px 0 0 0;
   padding: 0 0 0 4px;

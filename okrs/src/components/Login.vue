@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container style="margin:30px 0 0 0;">
     <v-card class="mx-auto" max-width="344" outlined elevation="2">
       <v-list-item three-line>
         <h1 class="title is-5">Please login to access the OKR information</h1>
