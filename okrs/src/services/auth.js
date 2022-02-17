@@ -152,7 +152,7 @@ export default {
         } catch (err) {
             console.log(err)
             // 2. Silent process might have failed so try via popup
-            tokenResp = await msalApp.acquireTokenPopup(accessTokenRequest)
+            tokenResp = msalApp.acquireTokenRedirect(accessTokenRequest)
             console.log('### MSAL acquireTokenPopup was successful')
         }
 
