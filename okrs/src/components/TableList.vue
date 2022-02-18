@@ -25,12 +25,11 @@
     </v-row>
     <div v-if="team.displayOKRs" :id="'team-okrs' + team.id">
       <v-row
-        v-for="okr in okrsByTeam(team.id)"
+        v-for="okr in okrsByTeam(team.id).filter(okr => okr.displayOKR)"
         :key="okr['id']"
         v-on:click="selectedOKR(okr['id'])"
-        :class="[okr['classOkrRow']]"
         dense
-        class="table-okr-row"
+        class="table-okr-row"        
       >
         <v-col cols="1"
           ><v-icon dense color="blue darken-2">

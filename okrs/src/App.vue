@@ -282,6 +282,11 @@ export default {
         return a["OKR_x002d_ID"] - b["OKR_x002d_ID"];
       });
 
+      this.okrs.forEach((okr) => {
+        Vue.set(okr, "displayOKR", true);
+        Vue.set(okr, "related", null);
+      });
+
       this.dataloaded = this.dataloaded + 1;
     },
 
@@ -355,14 +360,13 @@ export default {
               //
             } else {
               if (this.settings.includes("filter-related")) {
-                Vue.set(okr, "classOkrRow", "okr-hidden");
-                Vue.set(okr, "shown", false);
+                okr.displayOKR = false;
               }
             }
 
             // show parent Obj if KR is shown
             if (
-              okr.shown &&
+              okr.displayOKR &&
               okr.Category == "KR" &&
               this.settings.includes("filter-related")
             ) {
@@ -373,9 +377,9 @@ export default {
               );
               // console.log("Show parent:" + parentObj.id);
               if (parentObj) {
-                Vue.set(okr, "shown", true);
-                if (parentObj.classOkrRow == "okr-hidden") {
-                  Vue.set(parentObj, "classOkrRow", "");
+                okr.displayOKR = true;
+                if (parentObj.displayOKR == false) {
+                  parentObj.displayOKR = true;
                 }
               }
             }
@@ -410,9 +414,8 @@ export default {
         team.displayOKRs = true;
       });
       this.okrs.forEach((okr) => {
-        Vue.set(okr, "classOkrRow", "");
-        Vue.set(okr, "shown", true);
-        Vue.set(okr, "related", null);
+        okr.displayOKR = true;
+        okr.related = null;
       });
     },
     findSupOKRsX(list, depth = 1) {
@@ -424,7 +427,7 @@ export default {
         if (x && x.length > 0) {
           x.forEach((io) => {
             supOKRsX = supOKRsX.concat([{ okr: io, depth: depth }]);
-            io["related"] = depth;
+            io.related = depth;
           });
           let children = this.findSupOKRsX(x, depth + 1);
           if (children && children.length > 0) {
@@ -441,7 +444,7 @@ export default {
         if (x && x.length > 0) {
           x.forEach((io) => {
             refOKRsX = refOKRsX.concat({ okr: io, depth: depth });
-            io["related"] = -depth;
+            io.related = -depth;
           });
           let parent = this.findRefOKRsX(x, depth + 1);
           if (parent && parent.length > 0) {
