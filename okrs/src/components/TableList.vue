@@ -1,38 +1,48 @@
 <template>
-  <div class="table-okr-section" :class="classSection()">
+  <div v-if="team.displayTeam" class="table-okr-section" :class="classSection()">
     <v-row
       class="table-okr-team"
-      v-bind:class="[team.displayClass]"
-      ref="team-1"
       :id="'team-' + team.id"
       dense
+      @click="toggleTeam(team)"
     >
       <v-col cols="12">
         {{ displayTitle(team) }}
+        <span style="float: right">
+          <v-icon
+            v-if="team.displayOKRs == false"
+            dense
+            color="grey lighten-1"
+            x-small
+            >mdi-arrow-expand-down</v-icon
+          >
+        </span>
       </v-col>
     </v-row>
-    <v-row
-      v-for="okr in okrsByTeam(team.id)"
-      :key="okr['id']"
-      v-on:click="selectedOKR(okr['id'])"
-      :class="[okr['classOkrRow']]"
-      dense
-      class="table-okr-row"
-    >
-      <v-col cols="1"
-        ><v-icon dense color="blue darken-2">
-          {{ relatedIcon(okr) }}
-        </v-icon></v-col
+    <div v-if="team.displayOKRs" :id="'team-okrs' + team.id">
+      <v-row
+        v-for="okr in okrsByTeam(team.id)"
+        :key="okr['id']"
+        v-on:click="selectedOKR(okr['id'])"
+        :class="[okr['classOkrRow']]"
+        dense
+        class="table-okr-row"
       >
-      <v-col cols="1" v-if="settings.includes('show-id')">{{
-        okr["id"]
-      }}</v-col>
-      <v-col cols="1" :class="classCategory(okr)"
-        >{{ okr["Category"] }} {{ okr["_x0023_"] }}</v-col
-      >
-      <v-col cols="" :class="classTitle(okr)">{{ okr["Title"] }}</v-col>
-      <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
-    </v-row>
+        <v-col cols="1"
+          ><v-icon dense color="blue darken-2">
+            {{ relatedIcon(okr) }}
+          </v-icon></v-col
+        >
+        <v-col cols="1" v-if="settings.includes('show-id')">{{
+          okr["id"]
+        }}</v-col>
+        <v-col cols="1" :class="classCategory(okr)"
+          >{{ okr["Category"] }} {{ okr["_x0023_"] }}</v-col
+        >
+        <v-col cols="" :class="classTitle(okr)">{{ okr["Title"] }}</v-col>
+        <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
+      </v-row>
+    </div>
     <TableList
       v-for="t in team.Children"
       :team="t"
@@ -45,6 +55,7 @@
 </template>
 
 <script>
+import Vue from "vue";
 import TableList from "./TableList";
 
 export default {
@@ -73,7 +84,17 @@ export default {
         }
       },
       classSection: () => {
-        return "table-okr-section-" + this.depth;
+        let classSection = "table-okr-section-" + this.depth;
+
+        if (this.depth > 1) {
+          classSection += " table-okr-section-nth";
+        }
+
+        //classSection += " " + this.team.displayClass;
+
+        // console.log([this.team.displayClass])
+
+        return classSection;
       },
     };
   },
@@ -123,6 +144,23 @@ export default {
         return progress.toFixed(0) + "%";
       }
     },
+    toggleTeam: function (team) {
+      console.log("toggleTeam", team.displayOKRs);
+      if (!global.App.selectedOKR) {
+        // if (team["displayClassTeamOKRs"] == "table-okr-team-okrs-show") {
+        //   Vue.set(team, "displayClassTeamOKRs", "table-okr-team-okrs-hide");
+        // } else {
+        //   Vue.set(team, "displayClassTeamOKRs", "table-okr-team-okrs-show");
+        // }
+
+        // team.displayOKRs = !team.displayOKRs;
+        Vue.set(team, "displayOKRs", !team.displayOKRs);
+
+        global.App.scrollToTeam(team["id"]);
+      }
+    },
+  },
+  watch: {   
   },
 };
 </script>
@@ -137,6 +175,13 @@ export default {
   padding: 0 0 0 4px;
   border-left: #e7e7fd 2px solid; */
 }
+.table-okr-team-okrs-show {
+  display: inherit;
+}
+.table-okr-team-okrs-hide {
+  display: none;
+}
+
 .table-okr-container {
   /* margin: 5px 0 0 6px; */
   /* border-left: rgb(184, 181, 181) 2px solid; */
@@ -150,6 +195,9 @@ export default {
   padding: 0 0 0 5px;
   color: #3e42bd;
   line-height: 1.2;
+}
+.table-okr-team:hover {
+  background-color: #dfdfff;
 }
 .table-ork-team-hidden {
   display: none;
@@ -178,29 +226,35 @@ export default {
 .table-okr-row:hover {
   background-color: #fffec3;
 }
+
 .table-okr-section-1 {
   margin: 4px 0 0 -4px;
-  padding: 0 0 0 4px;
+  padding: 4px 4px 0 4px;
   border-left: #e7e7fd 2px solid;
+  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-2 {
-  margin: 4px 0 0 -3px;
-  padding: 0 0 0 4px;
+  margin: 4px -3px 0 -3px;
+  padding: 4px 3px 0 4px;
   border-left: #c8c8ff 2px solid;
+  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-3 {
-  margin: 4px 0 0 -3px;
-  padding: 0 0 0 4px;
+  margin: 4px -3px 0 -3px;
+  padding: 4px 3px 0 4px;
   border-left: #a5a5f5 2px solid;
+  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-4 {
-  margin: 4px 0 0 -3px;
-  padding: 0 0 0 4px;
+  margin: 4px -3px 0 -3px;
+  padding: 4px 3px 0 4px;
   border-left: #6f6fef 2px solid;
+  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-5 {
-  margin: 4px 0 0 -3px;
-  padding: 0 0 0 4px;
+  margin: 4px -3px 0 -3px;
+  padding: 4px 3px 0 4px;
   border-left: #5454f7 2px solid;
+  border-top: #c8c8ff 1px solid;
 }
 </style>

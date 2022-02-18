@@ -92,6 +92,58 @@
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
+
+      <!-- <v-card id="create"> -->
+        <v-speed-dial
+          v-model="fabDisplayOptions"
+          direction="bottom"
+          open-on-hover
+          transition="slide-y-reverse-transition"
+        >
+          <template v-slot:activator>
+            <v-btn
+              v-model="fabDisplayOptions"              
+              fab
+              x-small
+              color="blue"
+            >
+              <v-icon v-if="fabDisplayOptions"> mdi-close </v-icon>
+              <v-icon v-else> mdi-filter-variant </v-icon>
+            </v-btn>
+          </template>
+
+          <v-tooltip left>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                fab
+                x-small
+                color="indigo"
+                v-bind="attrs"
+                v-on="on"
+                v-on:click="collapseAll()"
+              >
+                <v-icon>mdi-chevron-double-up</v-icon>
+              </v-btn>
+            </template>
+            <span>Collapse All</span>
+          </v-tooltip>
+
+          <v-tooltip left>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                fab
+                x-small
+                color="indigo"
+                v-bind="attrs"
+                v-on="on"
+                v-on:click="expandAll()"
+              >
+                <v-icon>mdi-chevron-double-down</v-icon>
+              </v-btn>
+            </template>
+            <span>Expand All</span>
+          </v-tooltip>
+        </v-speed-dial>
     </v-app-bar>
 
     <v-main>
@@ -161,6 +213,7 @@ export default {
     message: "",
     detailsVisible: false,
     windowPosition: 0,
+    fabDisplayOptions: false,
     // Related OKRs
     relatedTeams: [],
     refOKRsX: [],
@@ -188,6 +241,8 @@ export default {
     },
     // OKRs
     async loadData() {
+
+      // Load Teams
       const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
       this.teams = await graph.getList(
         teamsListId,
@@ -210,12 +265,19 @@ export default {
         return 0;
       });
 
+      this.teams.forEach((team) => {
+        Vue.set(team, "displayTeam", true);
+        Vue.set(team, "displayOKRs", true);
+      });
+
+      // Load Periods
       const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
       this.periods = await graph.getList(
         periodsListId,
         "id,Title,StartDate,EndDate"
       );
 
+      // Load OKRs
       const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
       this.okrs = await graph.getList(
         okrsListId,
@@ -329,7 +391,7 @@ export default {
 
         this.teams.forEach((team) => {
           if (!this.relatedTeams.includes(team["id"])) {
-            Vue.set(team, "displayClass", "table-ork-team-hidden");
+            team.displayTeam = false;
           }
         });
         this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
@@ -351,7 +413,8 @@ export default {
       this.supOKRsX = [];
 
       this.teams.forEach((team) => {
-        Vue.set(team, "displayClass", "");
+        team.displayTeam = true;
+        team.displayOKRs = true;
       });
       this.okrs.forEach((okr) => {
         Vue.set(okr, "classOkrRow", "");
@@ -413,6 +476,23 @@ export default {
       if (this.windowPosition != window.pageYOffset) {
         this.selectedTeam = null;
       }
+    },
+    collapseAll() {
+      this.resetSelected();
+      this.teams.forEach((team) => {
+        team.displayTeam = true;
+        team.displayOKRs = false;
+      });
+
+      this.scrollToTeam(1);
+    },
+    expandAll() {
+      this.resetSelected();
+      this.teams.forEach((team) => {
+        team.displayTeam = true;
+        team.displayOKRs = true;
+      });
+      this.scrollToTeam(1);
     },
   },
 

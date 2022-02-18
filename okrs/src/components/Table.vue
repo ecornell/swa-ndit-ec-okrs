@@ -1,10 +1,10 @@
 <template>
-  <v-container>
+  <v-container class="table-container">
     <v-row dense class="blue-grey--text table-okr-header-row">
       <v-col cols="1"></v-col>
       <v-col cols="1" v-if="settings.includes('show-id')">ID</v-col>
       <v-col cols="1">OKR #</v-col>
-      <v-col cols="" class="text-center" >Title</v-col>
+      <v-col cols="" class="text-center">Title</v-col>
       <v-col cols="1">Progress</v-col>
     </v-row>
     <TableList
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import TableList from "./TableList"; 
+import TableList from "./TableList";
 
 export default {
   props: ["okrs", "teams", "settings"],
@@ -37,7 +37,7 @@ export default {
     user: async function () {
       this.fetchGraphDetails();
     },
-    teams (val, oldVal) {
+    teams(val, oldVal) {
       console.log("teams changed", val, oldVal);
       this.teams = val;
       this.heirarchyTeams = this.listToTree(val);
@@ -54,8 +54,8 @@ export default {
       let data = [...list];
       // console.log(data);
       var ID_KEY = "id";
-      var PARENT_KEY =  "ParentLookupId";
-      var CHILDREN_KEY =  "Children";
+      var PARENT_KEY = "ParentLookupId";
+      var CHILDREN_KEY = "Children";
 
       var map = {}; // make cache
       for (let i = 0; i < data.length; i++) {
@@ -83,17 +83,18 @@ export default {
   mounted() {
     console.log("Table - mounted");
   },
-  created: function () {
-  },
+  created: function () {},
 };
-
 </script>
 
 <style scoped>
+.table-container {
+  padding: 10px 20px 0 0;
+}
 .table-okr-header-row {
-  border-bottom: 1px solid #cbcbcb;
-  line-height: .8;
+  /* border-bottom: 1px solid #cbcbcb; */
+  line-height: 0.8;
   font-weight: 300;
-  font-size: .9em;
+  font-size: 0.9em;
 }
 </style>
