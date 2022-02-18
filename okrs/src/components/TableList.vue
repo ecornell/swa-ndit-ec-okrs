@@ -1,5 +1,9 @@
 <template>
-  <div v-if="team.displayTeam" class="table-okr-section" :class="classSection()">
+  <div
+    v-if="team.displayTeam"
+    class="table-okr-section"
+    :class="classSection()"
+  >
     <v-row
       class="table-okr-team"
       :id="'team-' + team.id"
@@ -55,7 +59,6 @@
 </template>
 
 <script>
-import Vue from "vue";
 import TableList from "./TableList";
 
 export default {
@@ -70,30 +73,20 @@ export default {
         //marginLeft: this.depth * 10 + "px",
       },
       classCategory: (okr) => {
-        if (okr["Category"] == "Obj") {
-          return "table-okr-cat-obj";
-        } else {
-          return "table-okr-cat-kr";
-        }
+        return okr["Category"] == "Obj"
+          ? "table-okr-cat-obj"
+          : "table-okr-cat-kr";
       },
       classTitle: (okr) => {
-        if (okr["Category"] == "Obj") {
-          return "table-okr-title-obj";
-        } else {
-          return "table-okr-title-kr";
-        }
+        return okr["Category"] == "Obj"
+          ? "table-okr-title-obj"
+          : "table-okr-title-kr";
       },
       classSection: () => {
         let classSection = "table-okr-section-" + this.depth;
-
         if (this.depth > 1) {
           classSection += " table-okr-section-nth";
         }
-
-        //classSection += " " + this.team.displayClass;
-
-        // console.log([this.team.displayClass])
-
         return classSection;
       },
     };
@@ -147,20 +140,10 @@ export default {
     toggleTeam: function (team) {
       console.log("toggleTeam", team.displayOKRs);
       if (!global.App.selectedOKR) {
-        // if (team["displayClassTeamOKRs"] == "table-okr-team-okrs-show") {
-        //   Vue.set(team, "displayClassTeamOKRs", "table-okr-team-okrs-hide");
-        // } else {
-        //   Vue.set(team, "displayClassTeamOKRs", "table-okr-team-okrs-show");
-        // }
-
-        // team.displayOKRs = !team.displayOKRs;
-        Vue.set(team, "displayOKRs", !team.displayOKRs);
-
+        team.displayOKRs = !team.displayOKRs;
         global.App.scrollToTeam(team["id"]);
       }
     },
-  },
-  watch: {   
   },
 };
 </script>
@@ -170,25 +153,6 @@ export default {
   display: none !important;
 }
 
-.table-okr-section {
-  /* margin: 5px 0 0 0;
-  padding: 0 0 0 4px;
-  border-left: #e7e7fd 2px solid; */
-}
-.table-okr-team-okrs-show {
-  display: inherit;
-}
-.table-okr-team-okrs-hide {
-  display: none;
-}
-
-.table-okr-container {
-  /* margin: 5px 0 0 6px; */
-  /* border-left: rgb(184, 181, 181) 2px solid; */
-}
-.table-okr-orks {
-  margin: 0 0 0 10px;
-}
 .table-okr-team {
   font-weight: 500;
   background-color: #f3f3ff;
@@ -205,56 +169,45 @@ export default {
 
 .table-okr-cat-obj {
   font-weight: 500;
-  /* white-space: nowrap; */
-  /* padding: 0 0 0 5px; */
 }
 .table-okr-cat-kr {
   font-weight: 300;
   margin: 0 0 0 20px;
-  /* padding: 0 0 0 5px; */
 }
 
 .table-okr-title-obj {
   font-weight: 500;
-  /* padding: 0 0 0 5px; */
 }
 .table-okr-title-kr {
   font-weight: 300;
   margin: 0 0 0 20px;
-  /* padding: 0 0 0 5px; */
 }
 .table-okr-row:hover {
   background-color: #fffec3;
 }
 
+.table-okr-section {
+  border-top: #c8c8ff 1px solid;
+}
 .table-okr-section-1 {
   margin: 4px 0 0 -4px;
   padding: 4px 4px 0 4px;
   border-left: #e7e7fd 2px solid;
-  border-top: #c8c8ff 1px solid;
+}
+.table-okr-section-nth {
+  margin: 4px -3px 0 -3px;
+  padding: 4px 3px 0 4px;
 }
 .table-okr-section-2 {
-  margin: 4px -3px 0 -3px;
-  padding: 4px 3px 0 4px;
   border-left: #c8c8ff 2px solid;
-  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-3 {
-  margin: 4px -3px 0 -3px;
-  padding: 4px 3px 0 4px;
   border-left: #a5a5f5 2px solid;
-  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-4 {
-  margin: 4px -3px 0 -3px;
-  padding: 4px 3px 0 4px;
   border-left: #6f6fef 2px solid;
-  border-top: #c8c8ff 1px solid;
 }
 .table-okr-section-5 {
-  margin: 4px -3px 0 -3px;
-  padding: 4px 3px 0 4px;
   border-left: #5454f7 2px solid;
-  border-top: #c8c8ff 1px solid;
 }
 </style>

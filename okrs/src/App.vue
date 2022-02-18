@@ -93,57 +93,51 @@
 
       <v-spacer></v-spacer>
 
-      <!-- <v-card id="create"> -->
-        <v-speed-dial
-          v-model="fabDisplayOptions"
-          direction="bottom"
-          open-on-hover
-          transition="slide-y-reverse-transition"
-        >
-          <template v-slot:activator>
+      <v-speed-dial
+        v-model="fabDisplayOptions"
+        direction="bottom"
+        open-on-hover
+        transition="slide-y-reverse-transition"
+      >
+        <template v-slot:activator>
+          <v-btn v-model="fabDisplayOptions" fab x-small color="blue">
+            <v-icon v-if="fabDisplayOptions"> mdi-close </v-icon>
+            <v-icon v-else> mdi-filter-variant </v-icon>
+          </v-btn>
+        </template>
+
+        <v-tooltip left>
+          <template v-slot:activator="{ on, attrs }">
             <v-btn
-              v-model="fabDisplayOptions"              
               fab
               x-small
-              color="blue"
+              color="indigo"
+              v-bind="attrs"
+              v-on="on"
+              v-on:click="collapseAll()"
             >
-              <v-icon v-if="fabDisplayOptions"> mdi-close </v-icon>
-              <v-icon v-else> mdi-filter-variant </v-icon>
+              <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>
+          <span>Collapse All</span>
+        </v-tooltip>
 
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                fab
-                x-small
-                color="indigo"
-                v-bind="attrs"
-                v-on="on"
-                v-on:click="collapseAll()"
-              >
-                <v-icon>mdi-chevron-double-up</v-icon>
-              </v-btn>
-            </template>
-            <span>Collapse All</span>
-          </v-tooltip>
-
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                fab
-                x-small
-                color="indigo"
-                v-bind="attrs"
-                v-on="on"
-                v-on:click="expandAll()"
-              >
-                <v-icon>mdi-chevron-double-down</v-icon>
-              </v-btn>
-            </template>
-            <span>Expand All</span>
-          </v-tooltip>
-        </v-speed-dial>
+        <v-tooltip left>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              fab
+              x-small
+              color="indigo"
+              v-bind="attrs"
+              v-on="on"
+              v-on:click="expandAll()"
+            >
+              <v-icon>mdi-chevron-double-down</v-icon>
+            </v-btn>
+          </template>
+          <span>Expand All</span>
+        </v-tooltip>
+      </v-speed-dial>
     </v-app-bar>
 
     <v-main>
@@ -241,7 +235,6 @@ export default {
     },
     // OKRs
     async loadData() {
-
       // Load Teams
       const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
       this.teams = await graph.getList(

@@ -1,11 +1,11 @@
 <template>
   <v-container class="table-container">
     <v-row dense class="blue-grey--text table-okr-header-row">
-      <v-col cols="1"></v-col>
-      <v-col cols="1" v-if="settings.includes('show-id')">ID</v-col>
-      <v-col cols="1">OKR #</v-col>
-      <v-col cols="" class="text-center">Title</v-col>
-      <v-col cols="1">Progress</v-col>
+      <v-col cols="1" sytle="max-width: 100%;"></v-col>
+      <v-col cols="1" sytle="max-width: 100%;" v-if="settings.includes('show-id')">ID</v-col>
+      <v-col cols="1" sytle="max-width: 100%;">OKR#</v-col>
+      <v-col cols=""  sytle="max-width: 100%;" class="text-center">Title</v-col>
+      <v-col cols="1" sytle="max-width: 100%;">Progress</v-col>
     </v-row>
     <TableList
       v-for="team in heirarchyTeams"
@@ -88,11 +88,7 @@ export default {
 </script>
 
 <style scoped>
-.table-container {
-  padding: 10px 20px 0 0;
-}
 .table-okr-header-row {
-  /* border-bottom: 1px solid #cbcbcb; */
   line-height: 0.8;
   font-weight: 300;
   font-size: 0.9em;
