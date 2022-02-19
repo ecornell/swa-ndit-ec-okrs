@@ -310,6 +310,7 @@ export default {
         // console.log(this.refOKRsX);
 
         this.supOKRsX = this.findSupOKRsX([this.selectedOKR]);
+
         // console.log("this.supOKRsX");
         // console.log(this.supOKRsX);
 
@@ -370,7 +371,7 @@ export default {
               okr.Category == "KR" &&
               this.settings.includes("filter-related")
             ) {
-              var parentObj = this.okrs.find(
+              let parentObj = this.okrs.find(
                 (o) =>
                   o["TeamLookupId"] == okr["TeamLookupId"] &&
                   o["_x0023_"] == okr["_x0023_"].toString().split(".")[0]
@@ -420,6 +421,25 @@ export default {
     },
     findSupOKRsX(list, depth = 1) {
       let supOKRsX = [];
+
+      // If selected OKR is an Objective, find related child KRs
+      if (depth == 1) {
+        let okr = list[0];
+        if (okr["Category"] == "Obj") {
+          let childKRs = this.okrs.filter(
+            (o) =>
+              o["TeamLookupId"] == okr["TeamLookupId"] &&
+              o["_x0023_"].toString().startsWith(okr["_x0023_"] + ".")
+          );
+          childKRs.forEach((io) => {
+            supOKRsX = supOKRsX.concat([{ okr: io, depth: depth }]);
+            io.related = depth;
+          });
+          list = list.concat(childKRs);
+          depth = 2;
+        }
+      }
+
       list.forEach((o) => {
         let x = this.okrs.filter(
           ({ ReferenceLookupId }) => ReferenceLookupId == o.id
@@ -458,7 +478,7 @@ export default {
       // console.log("scrollToTeam " + team);
       if (team) {
         await this.$nextTick();
-        var element = document.getElementById("team-" + team);
+        let element = document.getElementById("team-" + team);
         this.windowPosition = element.offsetTop - 10;
         window.scrollTo(0, this.windowPosition);
       }
