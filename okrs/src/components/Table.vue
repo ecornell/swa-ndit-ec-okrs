@@ -53,11 +53,11 @@ export default {
     listToTree(list) {
       let data = [...list];
       // console.log(data);
-      var ID_KEY = "id";
-      var PARENT_KEY = "ParentLookupId";
-      var CHILDREN_KEY = "Children";
+      let ID_KEY = "id";
+      let PARENT_KEY = "ParentLookupId";
+      let CHILDREN_KEY = "Children";
 
-      var map = {}; // make cache
+      let map = {}; // make cache
       for (let i = 0; i < data.length; i++) {
         if (data[i][ID_KEY]) {
           map[data[i][ID_KEY]] = data[i];

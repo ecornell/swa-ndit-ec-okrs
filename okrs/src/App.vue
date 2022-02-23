@@ -57,7 +57,7 @@
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block v-if="user" depressed @click="fullLogout">
+          <v-btn block v-if="userStore.name" depressed @click="fullLogout">
             Logout
           </v-btn>
         </div>
@@ -144,8 +144,8 @@
       <div v-if="error">
         {{ error }}
       </div>
-      <template v-if="!user && !error">
-        <Login v-if="!user && !error" />
+      <template v-if="!userStore.name && !error">
+        <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
         <Table :okrs="okrs" :teams="teams" :settings="settings" />
@@ -157,11 +157,23 @@
 
 <script>
 import Vue from "vue";
-import auth from "./services/auth";
+// import auth from "./services/auth";
 import graph from "./services/graph";
 import Login from "./components/Login";
 import Details from "./components/Details";
 import Table from "./components/Table";
+import {
+  // ref,
+  // defineComponent,
+  // reactive,
+  // computed,
+  // toRefs
+} from "@vue/composition-api";
+
+import { mapStores, mapState } from 'pinia'
+import { useUserStore } from "./store/user";
+import VueCompositionAPI from '@vue/composition-api'
+Vue.use(VueCompositionAPI)
 
 export default {
   name: "App",
@@ -172,18 +184,14 @@ export default {
     Table,
   },
 
+  computed: {
+    ...mapStores(useUserStore),
+    ...mapState(useUserStore, ['name'])
+  },
+
   created() {
-    // Basic setup of MSAL helper with client id, or give up
-    if (process.env.VUE_APP_CLIENT_ID) {
-      auth.configure(process.env.VUE_APP_CLIENT_ID, this);
-      // Restore any cached or saved local user
-      this.user = auth.user();
-      console.log(`configured ${auth.isConfigured()}`);
-    } else {
-      this.error = "VUE_APP_CLIENT_ID is not set";
-    }
-    //
     window.addEventListener("scroll", this.handleScroll);
+    this.userStore.login();
   },
 
   destroyed() {
@@ -196,8 +204,6 @@ export default {
     teams: [],
     okrs: [],
     dataloaded: 0,
-    // Auth Data
-    user: null,
     // UI Data
     drawer: null,
     settings: ["filter-related"],
@@ -219,19 +225,17 @@ export default {
   mounted() {
     global.App = document.getElementById("app").__vue__;
     document.title = "NDIT - OKRs";
+    if (this.userStore.name) {
+      this.loadData();
+    }
   },
 
   methods: {
-    // Auth / Graph
-    updateUser() {
-      this.user = auth.user();
-    },
     fullLogout() {
-      this.user = null;
       this.teams = [];
       this.okrs = [];
       this.periods = [];
-      auth.logout();
+      this.userStore.logout();
     },
     // OKRs
     async loadData() {
@@ -525,7 +529,7 @@ export default {
         }
       }
     },
-    user: function (newValue) {
+    name: function (newValue) {
       console.log("user changed " + newValue);
       if (newValue && newValue.size != 0) {
         this.loadData();

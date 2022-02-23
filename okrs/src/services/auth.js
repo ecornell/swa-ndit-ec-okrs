@@ -52,10 +52,10 @@ export default {
 
         function loginHandler(response) {
             console.log("loginHandler response:", response);
-            // console.log("app", app);
+            console.log("app", app);
             if (response !== null) {
                 if (app) {
-                    app.updateUser();
+                    app.login();
                 }
             }
         }
