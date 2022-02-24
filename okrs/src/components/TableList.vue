@@ -47,7 +47,7 @@
       </v-row>
     </div>
     <TableList
-      v-for="t in team.Children"
+      v-for="t in team.children"
       :team="t"
       :okrs="okrs"
       :settings="settings"
@@ -123,9 +123,9 @@ export default {
     },
     displayTitle: function (team) {
       if (this.depth == 1) {
-        return team["Title"];
+        return team["title"];
       } else {
-        return ". ".repeat(this.depth - 1) + team["Title"];
+        return ". ".repeat(this.depth - 1) + team["title"];
       }
     },
     displayProgress: function (okr) {

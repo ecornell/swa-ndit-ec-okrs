@@ -79,8 +79,8 @@
 
       <v-autocomplete
         v-model="selectedTeam"
-        :items="teams"
-        item-text="Title"
+        :items="dataStore.teams"
+        item-text="title"
         item-value="id"
         dense
         auto-select-first
@@ -148,7 +148,7 @@
         <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
-        <Table :okrs="okrs" :teams="teams" :settings="settings" />
+        <Table :okrs="okrs" :settings="settings" />
         <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
     </v-main>
@@ -157,23 +157,13 @@
 
 <script>
 import Vue from "vue";
-// import auth from "./services/auth";
 import graph from "./services/graph";
 import Login from "./components/Login";
 import Details from "./components/Details";
 import Table from "./components/Table";
-import {
-  // ref,
-  // defineComponent,
-  // reactive,
-  // computed,
-  // toRefs
-} from "@vue/composition-api";
-
-import { mapStores, mapState } from 'pinia'
+import { mapStores, mapState } from "pinia";
 import { useUserStore } from "./store/user";
-import VueCompositionAPI from '@vue/composition-api'
-Vue.use(VueCompositionAPI)
+import { useDataStore } from "./store/data";
 
 export default {
   name: "App",
@@ -185,13 +175,15 @@ export default {
   },
 
   computed: {
-    ...mapStores(useUserStore),
-    ...mapState(useUserStore, ['name'])
+    ...mapStores(useUserStore, useDataStore),
+    ...mapState(useUserStore, ["name"]),
   },
 
   created() {
     window.addEventListener("scroll", this.handleScroll);
     this.userStore.login();
+
+    this.dataStore.loadTeams();
   },
 
   destroyed() {
@@ -201,7 +193,6 @@ export default {
   data: () => ({
     // SP Data
     periods: [],
-    teams: [],
     okrs: [],
     dataloaded: 0,
     // UI Data
@@ -232,40 +223,12 @@ export default {
 
   methods: {
     fullLogout() {
-      this.teams = [];
       this.okrs = [];
       this.periods = [];
       this.userStore.logout();
     },
     // OKRs
     async loadData() {
-      // Load Teams
-      const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
-      this.teams = await graph.getList(
-        teamsListId,
-        "id,Title,ShortName,ParentLookupId"
-      );
-
-      this.teams = this.teams.sort((a, b) => {
-        if (a.id == 1) {
-          return -1;
-        }
-        if (b.id == 1) {
-          return 1;
-        }
-        if (a.Title < b.Title) {
-          return -1;
-        }
-        if (a.Title > b.Title) {
-          return 1;
-        }
-        return 0;
-      });
-
-      this.teams.forEach((team) => {
-        Vue.set(team, "displayTeam", true);
-        Vue.set(team, "displayOKRs", true);
-      });
 
       // Load Periods
       const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
@@ -320,18 +283,14 @@ export default {
 
         // Identify the teams that are related to this OKR
         this.relatedTeams = [];
-        this.relatedTeams.push(this.selectedOKR["TeamLookupId"]);
+        this.addRelatedTeam(this.selectedOKR["TeamLookupId"]);
 
         this.refOKRsX.forEach((x) => {
-          if (!this.relatedTeams.includes(x.okr["TeamLookupId"])) {
-            this.relatedTeams.push(x.okr["TeamLookupId"]);
-          }
+            this.addRelatedTeam(x.okr["TeamLookupId"]);
         });
 
         this.supOKRsX.forEach((x) => {
-          if (!this.relatedTeams.includes(x.okr["TeamLookupId"])) {
-            this.relatedTeams.push(x.okr["TeamLookupId"]);
-          }
+            this.addRelatedTeam(x.okr["TeamLookupId"]);
         });
 
         let tempList = [...this.relatedTeams];
@@ -339,9 +298,7 @@ export default {
           if (t) {
             let parentTeams = this._getParentTeams(t);
             parentTeams.forEach((p) => {
-              if (!this.relatedTeams.includes(p)) {
-                this.relatedTeams.push(p);
-              }
+              this.addRelatedTeam(p);
             });
           }
         });
@@ -391,30 +348,37 @@ export default {
           });
         }
 
-        this.teams.forEach((team) => {
-          if (!this.relatedTeams.includes(team["id"])) {
+        this.dataStore.teams.forEach((team) => {
+          if (!this.relatedTeams.includes(parseInt(team["id"]))) {
             team.displayTeam = false;
           }
         });
+
         this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
       }
     },
     _getParentTeams(tId, parentTeams = []) {
       //console.log("_getParentTeams " + tId + " : " + parentTeams);
-      let t = this.teams.filter(({ id }) => id == tId)[0];
-      let pT = t["ParentLookupId"];
+      let t = this.dataStore.teams.filter(({ id }) => id == tId)[0];
+      let pT = t["parentId"];
       if (pT && pT != 0 && pT != "") {
         parentTeams.push(pT);
         this._getParentTeams(pT, parentTeams);
       }
       return parentTeams;
     },
+    addRelatedTeam(teamId) {
+      let tId = parseInt(teamId);
+      if (!this.relatedTeams.includes(tId)) {
+        this.relatedTeams.push(tId);
+      }
+    },
     resetSelected() {
       this.selectedOKR = "";
       this.refOKRsX = [];
       this.supOKRsX = [];
 
-      this.teams.forEach((team) => {
+      this.dataStore.teams.forEach((team) => {
         team.displayTeam = true;
         team.displayOKRs = true;
       });
@@ -483,8 +447,10 @@ export default {
       if (team) {
         await this.$nextTick();
         let element = document.getElementById("team-" + team);
-        this.windowPosition = element.offsetTop - 10;
-        window.scrollTo(0, this.windowPosition);
+        if(element) {
+          this.windowPosition = element.offsetTop - 10;
+          window.scrollTo(0, this.windowPosition);
+        }
       }
     },
     updateSelectedTeam(newValue) {
@@ -499,7 +465,7 @@ export default {
     },
     collapseAll() {
       this.resetSelected();
-      this.teams.forEach((team) => {
+      this.dataStore.teams.forEach((team) => {
         team.displayTeam = true;
         team.displayOKRs = false;
       });
@@ -508,7 +474,7 @@ export default {
     },
     expandAll() {
       this.resetSelected();
-      this.teams.forEach((team) => {
+      this.dataStore.teams.forEach((team) => {
         team.displayTeam = true;
         team.displayOKRs = true;
       });

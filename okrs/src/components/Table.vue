@@ -20,12 +20,19 @@
 
 <script>
 import TableList from "./TableList";
+import { mapStores, mapState } from "pinia";
+import { useDataStore } from "../store/data";
 
 export default {
-  props: ["okrs", "teams", "settings"],
+  props: ["okrs", "settings"],
 
   components: {
     TableList,
+  },
+
+  computed: {
+    ...mapStores(useDataStore),
+    ...mapState(useDataStore, ["teams"]),
   },
 
   data: () => ({
@@ -33,13 +40,9 @@ export default {
   }),
 
   watch: {
-    //
-    user: async function () {
-      this.fetchGraphDetails();
-    },
     teams(val, oldVal) {
       console.log("teams changed", val, oldVal);
-      this.teams = val;
+      //this.teams = val;
       this.heirarchyTeams = this.listToTree(val);
     },
   },
@@ -54,8 +57,8 @@ export default {
       let data = [...list];
       // console.log(data);
       let ID_KEY = "id";
-      let PARENT_KEY = "ParentLookupId";
-      let CHILDREN_KEY = "Children";
+      let PARENT_KEY = "parentId";
+      let CHILDREN_KEY = "children";
 
       let map = {}; // make cache
       for (let i = 0; i < data.length; i++) {
