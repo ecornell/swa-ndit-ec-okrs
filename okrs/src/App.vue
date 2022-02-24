@@ -6,11 +6,11 @@
       <v-list subheader sinlge-line flat>
         <v-select
           v-model="selectedPeriod"
-          :items="periods"
+          :items="dataStore.periods"
           dense
           auto-select-first
           label="OKR Period"
-          item-text="Title"
+          item-text="title"
           item-value="id"
           outlined
           hint="Select a period"
@@ -184,6 +184,7 @@ export default {
     this.userStore.login();
 
     this.dataStore.loadTeams();
+    this.dataStore.loadPeriods();
   },
 
   destroyed() {
@@ -192,7 +193,6 @@ export default {
 
   data: () => ({
     // SP Data
-    periods: [],
     okrs: [],
     dataloaded: 0,
     // UI Data
@@ -224,18 +224,10 @@ export default {
   methods: {
     fullLogout() {
       this.okrs = [];
-      this.periods = [];
       this.userStore.logout();
     },
     // OKRs
     async loadData() {
-
-      // Load Periods
-      const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
-      this.periods = await graph.getList(
-        periodsListId,
-        "id,Title,StartDate,EndDate"
-      );
 
       // Load OKRs
       const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;

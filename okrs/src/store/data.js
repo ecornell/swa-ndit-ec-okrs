@@ -15,6 +15,12 @@ export const useDataStore = defineStore({
          * displayOKRs: boolean,
          * }[]} */
         teams: [],
+        /** @type {{
+         * id: number,
+         * title: string,
+         * startDate: string,
+         * endtDate: string,
+         *  }[]} */
         periods: [],
         okrs: [],
     }),
@@ -57,6 +63,26 @@ export const useDataStore = defineStore({
                 return 0;
             });
 
+        },
+
+        async loadPeriods() {
+            console.log('loadPeriods')
+
+            // Load Periods
+            const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
+             let resp = await graph.getList(
+                periodsListId,
+                "id,Title,StartDate,EndDate"
+            );
+
+            this.periods = resp.map(period => {               
+                let p = {}
+                p.id = parseInt(period.id);
+                p.title = period.Title;
+                p.startDate = period.StartDate;
+                p.endDate = period.EndDate;
+                return p;
+            });
         }
 
 
