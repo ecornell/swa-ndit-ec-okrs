@@ -40,9 +40,9 @@
           okr["id"]
         }}</v-col>
         <v-col cols="1" :class="classCategory(okr)"
-          >{{ okr["Category"] }} {{ okr["_x0023_"] }}</v-col
+          >{{ okr["category"] }} {{ okr["okrNumber"] }}</v-col
         >
-        <v-col cols="" :class="classTitle(okr)">{{ okr["Title"] }}</v-col>
+        <v-col cols="" :class="classTitle(okr)">{{ okr["title"] }}</v-col>
         <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
       </v-row>
     </div>
@@ -72,12 +72,12 @@ export default {
         //marginLeft: this.depth * 10 + "px",
       },
       classCategory: (okr) => {
-        return okr["Category"] == "Obj"
+        return okr.category == "Obj"
           ? "table-okr-cat-obj"
           : "table-okr-cat-kr";
       },
       classTitle: (okr) => {
-        return okr["Category"] == "Obj"
+        return okr.category == "Obj"
           ? "table-okr-title-obj"
           : "table-okr-title-kr";
       },
@@ -92,9 +92,9 @@ export default {
   },
   methods: {
     okrsByTeam: function (teamId) {
-      let teamOKRs = this.okrs.filter((okr) => okr.TeamLookupId == teamId);
+      let teamOKRs = this.okrs.filter((okr) => okr.teamId == teamId);
       teamOKRs.sort((a, b) => {
-        return a["_x0023_"] - b["_x0023_"];
+        return a.okrNumber - b.okrNumber;
       });
       return teamOKRs;
     },
@@ -102,7 +102,7 @@ export default {
       global.App.setSelected(event);
     },
     relatedIcon: function (okr) {
-      let related = okr["related"];
+      let related = okr.related;
       if (related != null) {
         if (related == 0) {
           return "mdi-arrow-right";
@@ -123,16 +123,16 @@ export default {
     },
     displayTitle: function (team) {
       if (this.depth == 1) {
-        return team["title"];
+        return team.title;
       } else {
-        return ". ".repeat(this.depth - 1) + team["title"];
+        return ". ".repeat(this.depth - 1) + team.title;
       }
     },
     displayProgress: function (okr) {
-      if (okr["Progress_x0025_"] == null) {
+      if (okr.progress == null) {
         return "";
       } else {
-        let progress = okr["Progress_x0025_"] * 100;
+        let progress = okr.progress * 100;
         return progress.toFixed(0) + "%";
       }
     },

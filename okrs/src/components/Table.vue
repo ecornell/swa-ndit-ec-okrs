@@ -50,7 +50,7 @@ export default {
   methods: {
     //
     okrsByTeam: function (teamId) {
-      return this.okrs.filter((okr) => okr.TeamLookupId == teamId);
+      return this.okrs.filter((okr) => okr.teamId == teamId);
     },
     //
     listToTree(list) {

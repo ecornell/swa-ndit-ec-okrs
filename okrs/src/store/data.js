@@ -22,10 +22,40 @@ export const useDataStore = defineStore({
          * endtDate: string,
          *  }[]} */
         periods: [],
+        /** @type {{
+         * id: number,
+         * title: string,
+         * category: string,
+         * okrId: number,
+         * okrNumber: number,
+         * okrType: string,
+         * ownerId: number,
+         * coOwnerId: number,
+         * periodId: number,
+         * teamId: number,
+         * team: string,
+         * period: string,
+         * owner: string,
+         * coOwner: string,
+         * tags: string[],
+         * reference: string,
+         * referenceId: number,
+         * progress: number,
+         * confidence: number,
+         * displayOKR: boolean,
+         * related: number,
+         * }[]} */
         okrs: [],
     }),
     getters: {},
     actions: {
+
+        async loadData() {
+            console.log('loadData')
+            await this.loadTeams();
+            await this.loadPeriods();
+            await this.loadOKRs(1);
+        },
 
         async loadTeams() {
             console.log('loadTeams')
@@ -70,12 +100,12 @@ export const useDataStore = defineStore({
 
             // Load Periods
             const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
-             let resp = await graph.getList(
+            let resp = await graph.getList(
                 periodsListId,
                 "id,Title,StartDate,EndDate"
             );
 
-            this.periods = resp.map(period => {               
+            this.periods = resp.map(period => {
                 let p = {}
                 p.id = parseInt(period.id);
                 p.title = period.Title;
@@ -83,8 +113,51 @@ export const useDataStore = defineStore({
                 p.endDate = period.EndDate;
                 return p;
             });
-        }
+        },
 
+        async loadOKRs(selectedPeriod) {
+            console.log('loadOKRs')
+
+            // Load OKRs
+            const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
+            let resp = await graph.getList(
+                okrsListId,
+                "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
+                `fields/Period0LookupId eq '${selectedPeriod}'`
+            );
+
+            this.okrs = resp.map(okr => {   
+                let o = {}
+                o.id = parseInt(okr.id);
+                o.title = okr.Title;
+                o.category = okr.Category;
+                o.okrId = okr.OKR_x002d_ID;
+                o.okrNumber = okr._x0023_;
+                o.okrType = okr.ORKType;
+                o.ownerId = okr.OwnerLookupId;
+                o.coOwnersId = okr.CoOwnersLookupId;
+                o.periodId = okr.Period0LookupId;
+                o.teamId = okr.TeamLookupId;
+                o.team = okr.Team;
+                o.period = okr.Period0;
+                o.owner = okr.Owner;
+                o.coOwners = okr.Co_x002d_Owners;
+                o.tags = okr.Tags;
+                o.reference = okr.Reference;
+                o.referenceId = okr.ReferenceLookupId;
+                o.progress = okr.Progress_x0025_;
+                o.confidence = okr.Confidence_x0020__x0025_;
+                //
+                o.displayOKR = true;
+                o.related = null;
+                return o;
+            });
+
+            this.okrs.sort((a, b) => {
+                return a.okrId - b.okrId;
+            });
+
+        },
 
     }
 })

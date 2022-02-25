@@ -148,7 +148,7 @@
         <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
-        <Table :okrs="okrs" :settings="settings" />
+        <Table :okrs="dataStore.okrs" :settings="settings" />
         <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
     </v-main>
@@ -156,8 +156,7 @@
 </template>
 
 <script>
-import Vue from "vue";
-import graph from "./services/graph";
+// import Vue from "vue";
 import Login from "./components/Login";
 import Details from "./components/Details";
 import Table from "./components/Table";
@@ -182,9 +181,9 @@ export default {
   created() {
     window.addEventListener("scroll", this.handleScroll);
     this.userStore.login();
-
-    this.dataStore.loadTeams();
-    this.dataStore.loadPeriods();
+    // this.dataStore.loadTeams();
+    // this.dataStore.loadPeriods();
+    // this.dataStore.loadOKRs(1);
   },
 
   destroyed() {
@@ -192,9 +191,6 @@ export default {
   },
 
   data: () => ({
-    // SP Data
-    okrs: [],
-    dataloaded: 0,
     // UI Data
     drawer: null,
     settings: ["filter-related"],
@@ -216,37 +212,14 @@ export default {
   mounted() {
     global.App = document.getElementById("app").__vue__;
     document.title = "NDIT - OKRs";
-    if (this.userStore.name) {
-      this.loadData();
-    }
+    // if (this.userStore.name) {
+    //   this.dataStore.loadData();
+    // }
   },
 
   methods: {
     fullLogout() {
-      this.okrs = [];
       this.userStore.logout();
-    },
-    // OKRs
-    async loadData() {
-
-      // Load OKRs
-      const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
-      this.okrs = await graph.getList(
-        okrsListId,
-        "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
-        `fields/Period0LookupId eq '${this.selectedPeriod}'`
-      );
-
-      this.okrs.sort((a, b) => {
-        return a["OKR_x002d_ID"] - b["OKR_x002d_ID"];
-      });
-
-      this.okrs.forEach((okr) => {
-        Vue.set(okr, "displayOKR", true);
-        Vue.set(okr, "related", null);
-      });
-
-      this.dataloaded = this.dataloaded + 1;
     },
 
     setSelected(_id, refresh = false) {
@@ -257,11 +230,11 @@ export default {
         this.resetSelected();
       } else {
         this.resetSelected();
-        // console.log(this.okrs);
+        // console.log(this.dataStore.okrs);
         // console.log(id);
 
-        this.selectedOKR = this.okrs.find(({ id }) => id == _id);
-        this.selectedOKR["related"] = 0;
+        this.selectedOKR = this.dataStore.okrs.find(({ id }) => id == _id);
+        this.selectedOKR.related = 0;
         // console.log("selectedOKR: " + this.selectedOKR);
 
         this.refOKRsX = this.findRefOKRsX([this.selectedOKR]);
@@ -275,14 +248,14 @@ export default {
 
         // Identify the teams that are related to this OKR
         this.relatedTeams = [];
-        this.addRelatedTeam(this.selectedOKR["TeamLookupId"]);
+        this.addRelatedTeam(this.selectedOKR.teamId);
 
         this.refOKRsX.forEach((x) => {
-            this.addRelatedTeam(x.okr["TeamLookupId"]);
+            this.addRelatedTeam(x.okr.teamId);
         });
 
         this.supOKRsX.forEach((x) => {
-            this.addRelatedTeam(x.okr["TeamLookupId"]);
+            this.addRelatedTeam(x.okr.teamId);
         });
 
         let tempList = [...this.relatedTeams];
@@ -299,17 +272,17 @@ export default {
 
         if (this.selectedOKR) {
           // loop thru all okr and set display state
-          this.okrs.forEach((okr) => {
-            if (okr["id"] == this.selectedOKR["id"]) {
+          this.dataStore.okrs.forEach((okr) => {
+            if (okr.id == this.selectedOKR.id) {
               //
             } else if (
               this.refOKRsX &&
-              this.refOKRsX.some((x) => x.okr.id == okr["id"])
+              this.refOKRsX.some((x) => x.okr.id == okr.id)
             ) {
               //
             } else if (
               this.supOKRsX &&
-              this.supOKRsX.some((x) => x.okr.id == okr["id"])
+              this.supOKRsX.some((x) => x.okr.id == okr.id)
             ) {
               //
             } else {
@@ -324,10 +297,10 @@ export default {
               okr.Category == "KR" &&
               this.settings.includes("filter-related")
             ) {
-              let parentObj = this.okrs.find(
+              let parentObj = this.dataStore.okrs.find(
                 (o) =>
-                  o["TeamLookupId"] == okr["TeamLookupId"] &&
-                  o["_x0023_"] == okr["_x0023_"].toString().split(".")[0]
+                  o.teamId == okr.teamId &&
+                  o.okrNumber == okr.okrNumber.toString().split(".")[0]
               );
               // console.log("Show parent:" + parentObj.id);
               if (parentObj) {
@@ -341,18 +314,18 @@ export default {
         }
 
         this.dataStore.teams.forEach((team) => {
-          if (!this.relatedTeams.includes(parseInt(team["id"]))) {
+          if (!this.relatedTeams.includes(parseInt(team.id))) {
             team.displayTeam = false;
           }
         });
 
-        this.scrollToTeam(this.selectedOKR["TeamLookupId"]);
+        this.scrollToTeam(this.selectedOKR.teamId);
       }
     },
     _getParentTeams(tId, parentTeams = []) {
       //console.log("_getParentTeams " + tId + " : " + parentTeams);
       let t = this.dataStore.teams.filter(({ id }) => id == tId)[0];
-      let pT = t["parentId"];
+      let pT = t.parentId;
       if (pT && pT != 0 && pT != "") {
         parentTeams.push(pT);
         this._getParentTeams(pT, parentTeams);
@@ -374,9 +347,19 @@ export default {
         team.displayTeam = true;
         team.displayOKRs = true;
       });
-      this.okrs.forEach((okr) => {
+      this.dataStore.okrs.forEach((okr) => {
         okr.displayOKR = true;
         okr.related = null;
+
+
+        // if (okr.displayOKR == false) {
+        //   //okr.displayOKR = true;
+        //   Vue.set(okr, "displayOKR", true);
+        // }
+        // if (okr.related) {
+        //   // okr.related = null;
+        //   Vue.set(okr, "related", null);
+        // }
       });
     },
     findSupOKRsX(list, depth = 1) {
@@ -385,11 +368,11 @@ export default {
       // If selected OKR is an Objective, find related child KRs
       if (depth == 1) {
         let okr = list[0];
-        if (okr["Category"] == "Obj") {
-          let childKRs = this.okrs.filter(
+        if (okr.category == "Obj") {
+          let childKRs = this.dataStore.okrs.filter(
             (o) =>
-              o["TeamLookupId"] == okr["TeamLookupId"] &&
-              o["_x0023_"].toString().startsWith(okr["_x0023_"] + ".")
+              o.teamId == okr.teamId &&
+              o.okrNumber.toString().startsWith(okr.okrNumber + ".")
           );
           childKRs.forEach((io) => {
             supOKRsX = supOKRsX.concat([{ okr: io, depth: depth }]);
@@ -401,8 +384,8 @@ export default {
       }
 
       list.forEach((o) => {
-        let x = this.okrs.filter(
-          ({ ReferenceLookupId }) => ReferenceLookupId == o.id
+        let x = this.dataStore.okrs.filter(
+          ({ referenceId }) => referenceId == o.id
         );
         if (x && x.length > 0) {
           x.forEach((io) => {
@@ -420,7 +403,7 @@ export default {
     findRefOKRsX(list, depth = 1) {
       let refOKRsX = [];
       list.forEach((o) => {
-        let x = this.okrs.filter(({ id }) => id == o.ReferenceLookupId);
+        let x = this.dataStore.okrs.filter(({ id }) => id == o.referenceId);
         if (x && x.length > 0) {
           x.forEach((io) => {
             refOKRsX = refOKRsX.concat({ okr: io, depth: depth });
@@ -490,7 +473,8 @@ export default {
     name: function (newValue) {
       console.log("user changed " + newValue);
       if (newValue && newValue.size != 0) {
-        this.loadData();
+        // this.loadData();
+        this.dataStore.loadData();
       }
     },
   },

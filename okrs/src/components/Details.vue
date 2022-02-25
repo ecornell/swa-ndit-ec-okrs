@@ -28,13 +28,13 @@
         <v-container>
           <v-row dense>
             <v-col cols="8">
-              {{ selectedOKR["Category"] }} {{ selectedOKR["_x0023_"] }} -
-              {{ selectedOKR["Title"] }}
+              {{ selectedOKR.category }} {{ selectedOKR.okrNumber }} -
+              {{ selectedOKR.title }}
             </v-col>
 
             <v-col cols="3"
               ><span class="grey--text float-right"
-                >{{ selectedOKR["id"] }}-{{ selectedOKR["OKR_x002d_ID"] }}</span
+                >{{ selectedOKR.id }}-{{ selectedOKR.okrId }}</span
               ></v-col
             >
 
@@ -58,24 +58,24 @@
           <v-row dense>
             <v-col cols="2"><span class="grey--text">Team</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR["Team"] }}
+              {{ selectedOKR.team }}
             </v-col>
 
             <v-col cols="2"><span class="grey--text">Confidence</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR["Confidence_x0020__x0025_"] }}
+              {{ selectedOKR.confidence }}
             </v-col>
           </v-row>
 
           <v-row dense>
             <v-col cols="2"><span class="grey--text">Owner</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR["Owner"] }}
+              {{ selectedOKR.owner }}
             </v-col>
 
             <v-col cols="2"><span class="grey--text">Progress</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR["Progress_x0025_"] }}
+              {{ selectedOKR.progress }}
             </v-col>
           </v-row>
 
@@ -89,7 +89,7 @@
           <v-row dense>
             <v-col cols="2"><span class="grey--text">Referenced</span></v-col>
             <v-col cols="10">
-              {{ selectedOKR["Reference"] }}
+              {{ selectedOKR.reference }}
             </v-col>
           </v-row>
         </v-container>
@@ -111,15 +111,15 @@ export default {
 
   methods: {
     getCoOwners: function () {
-      if (this.selectedOKR["Co_x002d_Owners"]) {
-        if (this.selectedOKR["Co_x002d_Owners"].length > 1) {
+      if (this.selectedOKR.coOwners) {
+        if (this.selectedOKR.coOwners.length > 1) {
           let coOwners = "";
-          this.selectedOKR["Co_x002d_Owners"].forEach((co) => {
+          this.selectedOKR.coOwners.forEach((co) => {
             coOwners = coOwners + co["LookupValue"] + ",";
           });
           return coOwners;
         } else {
-          return this.selectedOKR["Co_x002d_Owners"][0]["LookupValue"];
+          return this.selectedOKR.coOwners[0]["LookupValue"];
         }
       }
     },
@@ -127,7 +127,7 @@ export default {
       this.shown = !this.shown;
     },
     detailsVisible: function () {
-      if (this.selectedOKR && this.selectedOKR["id"]) {
+      if (this.selectedOKR && this.selectedOKR.id) {
         return true;
       } else {
         return false;
