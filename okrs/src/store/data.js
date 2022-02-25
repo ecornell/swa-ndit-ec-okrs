@@ -46,15 +46,18 @@ export const useDataStore = defineStore({
          * related: number,
          * }[]} */
         okrs: [],
+        loaded: false,
     }),
     getters: {},
     actions: {
 
         async loadData() {
             console.log('loadData')
+            this.loaded = false;
             await this.loadTeams();
             await this.loadPeriods();
             await this.loadOKRs(1);
+            this.loaded = true;
         },
 
         async loadTeams() {

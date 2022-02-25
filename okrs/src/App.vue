@@ -148,6 +148,9 @@
         <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
+        <v-overlay :value="!dataStore.loaded">
+          <v-progress-circular indeterminate size="64"></v-progress-circular>
+        </v-overlay>
         <Table :okrs="dataStore.okrs" :settings="settings" />
         <Details :selectedOKR="selectedOKR" :detailsVisible="detailsVisible" />
       </template>
@@ -181,9 +184,7 @@ export default {
   created() {
     window.addEventListener("scroll", this.handleScroll);
     this.userStore.login();
-    // this.dataStore.loadTeams();
-    // this.dataStore.loadPeriods();
-    // this.dataStore.loadOKRs(1);
+    this.dataStore.loadData();
   },
 
   destroyed() {
@@ -212,9 +213,6 @@ export default {
   mounted() {
     global.App = document.getElementById("app").__vue__;
     document.title = "NDIT - OKRs";
-    // if (this.userStore.name) {
-    //   this.dataStore.loadData();
-    // }
   },
 
   methods: {
@@ -251,11 +249,11 @@ export default {
         this.addRelatedTeam(this.selectedOKR.teamId);
 
         this.refOKRsX.forEach((x) => {
-            this.addRelatedTeam(x.okr.teamId);
+          this.addRelatedTeam(x.okr.teamId);
         });
 
         this.supOKRsX.forEach((x) => {
-            this.addRelatedTeam(x.okr.teamId);
+          this.addRelatedTeam(x.okr.teamId);
         });
 
         let tempList = [...this.relatedTeams];
@@ -350,16 +348,6 @@ export default {
       this.dataStore.okrs.forEach((okr) => {
         okr.displayOKR = true;
         okr.related = null;
-
-
-        // if (okr.displayOKR == false) {
-        //   //okr.displayOKR = true;
-        //   Vue.set(okr, "displayOKR", true);
-        // }
-        // if (okr.related) {
-        //   // okr.related = null;
-        //   Vue.set(okr, "related", null);
-        // }
       });
     },
     findSupOKRsX(list, depth = 1) {
@@ -422,7 +410,7 @@ export default {
       if (team) {
         await this.$nextTick();
         let element = document.getElementById("team-" + team);
-        if(element) {
+        if (element) {
           this.windowPosition = element.offsetTop - 10;
           window.scrollTo(0, this.windowPosition);
         }

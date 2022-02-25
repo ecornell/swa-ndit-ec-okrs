@@ -87,7 +87,7 @@ export default {
         // https://azuread.github.io/microsoft-authentication-library-for-js/ref/modules/_azure_msal_browser.html#redirectrequest
         let loginRequest = {
             scopes,
-            //prompt: 'select_account'
+            prompt: 'select_account'
         }
         msalApp.loginRedirect(loginRequest);
 
@@ -102,7 +102,7 @@ export default {
         }
 
         const logoutRequest = {
-            // account: msalApp.getAccountByUsername(username),
+            //account: msalApp.getAccountByUsername(username),
             postLogoutRedirectUri: msalApp.config.auth.redirectUri,
         };
 
