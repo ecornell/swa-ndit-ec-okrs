@@ -1,6 +1,9 @@
 import {
     defineStore
 } from 'pinia'
+import {
+    useAppStore
+} from './app'
 import graph from "../services/graph";
 
 export const useDataStore = defineStore({
@@ -10,7 +13,7 @@ export const useDataStore = defineStore({
          * id: number, 
          * title: string,
          * shortName: string,
-         * parendId: number,
+         * parentId: number,
          * displayTeam: boolean,
          * displayOKRs: boolean,
          * }[]} */
@@ -47,6 +50,10 @@ export const useDataStore = defineStore({
          * }[]} */
         okrs: [],
         loaded: false,
+        //
+        relatedTeams: [],
+        refOKRsX: [],
+        supOKRsX: [],
     }),
     getters: {},
     actions: {
@@ -129,7 +136,7 @@ export const useDataStore = defineStore({
                 `fields/Period0LookupId eq '${selectedPeriod}'`
             );
 
-            this.okrs = resp.map(okr => {   
+            this.okrs = resp.map(okr => {
                 let o = {}
                 o.id = parseInt(okr.id);
                 o.title = okr.Title;
@@ -161,6 +168,176 @@ export const useDataStore = defineStore({
             });
 
         },
+
+        ///
+
+        updateRelated(selectedOKR) {
+
+            this.refOKRsX = this.findRefOKRsX([selectedOKR]);
+            this.supOKRsX = this.findSupOKRsX([selectedOKR]);
+
+            // Identify the teams that are related to this OKR
+            this.relatedTeams = [];
+            this.addRelatedTeam(selectedOKR.teamId);
+
+            this.refOKRsX.forEach((x) => {
+                this.addRelatedTeam(x.okr.teamId);
+            });
+
+            this.supOKRsX.forEach((x) => {
+                this.addRelatedTeam(x.okr.teamId);
+            });
+
+            let tempList = [...this.relatedTeams];
+            tempList.forEach((t) => {
+                if (t) {
+                    let parentTeams = this.getParentTeams(t);
+                    parentTeams.forEach((p) => {
+                        this.addRelatedTeam(p);
+                    });
+                }
+            });
+        },
+
+
+        updateOkrDisplayFlag(selectedOKR) {
+
+            const appStore = useAppStore();
+
+            if (selectedOKR) {
+                // loop thru all okr and set display state
+                this.okrs.forEach((okr) => {
+                    if (okr.id == selectedOKR.id) {
+                        //
+                    } else if (
+                        this.refOKRsX &&
+                        this.refOKRsX.some((x) => x.okr.id == okr.id)
+                    ) {
+                        //
+                    } else if (
+                        this.supOKRsX &&
+                        this.supOKRsX.some((x) => x.okr.id == okr.id)
+                    ) {
+                        //
+                    } else {
+                        if (appStore.settings.includes("filter-related")) {
+                            okr.displayOKR = false;
+                        }
+                    }
+
+                    // show parent Obj if KR is shown
+                    if (
+                        okr.displayOKR &&
+                        okr.category == "KR" &&
+                        appStore.settings.includes("filter-related")
+                    ) {
+                        let parentObj = this.okrs.find(
+                            (o) =>
+                            o.teamId == okr.teamId &&
+                            o.okrNumber == okr.okrNumber.toString().split(".")[0]
+                        );
+                        // console.log("Show parent:" + parentObj.id);
+                        if (parentObj) {
+                            okr.displayOKR = true;
+                            if (parentObj.displayOKR == false) {
+                                parentObj.displayOKR = true;
+                            }
+                        }
+                    }
+                });
+            }
+        },
+
+        /**
+         * @param {number} tId
+         * @param {number[]} parentTeams
+         */
+        getParentTeams(tId, parentTeams = []) {
+            //console.log("getParentTeams " + tId + " : " + parentTeams);
+            let t = this.teams.filter(({
+                id
+            }) => id == tId)[0];
+            let pT = t.parentId;
+            if (pT && pT != 0 && pT != "") {
+                parentTeams.push(pT);
+                this.getParentTeams(pT, parentTeams);
+            }
+            return parentTeams;
+        },
+        addRelatedTeam(teamId) {
+            let tId = parseInt(teamId);
+            if (!this.relatedTeams.includes(tId)) {
+                this.relatedTeams.push(tId);
+            }
+        },
+        findSupOKRsX(list, depth = 1) {
+            let supOKRsX = [];
+            // If selected OKR is an Objective, find related child KRs
+            if (depth == 1) {
+                let okr = list[0];
+                if (okr.category == "Obj") {
+                    let childKRs = this.okrs.filter(
+                        (o) =>
+                        o.teamId == okr.teamId &&
+                        o.okrNumber.toString().startsWith(okr.okrNumber + ".")
+                    );
+                    childKRs.forEach((io) => {
+                        supOKRsX = supOKRsX.concat([{
+                            okr: io,
+                            depth: depth
+                        }]);
+                        io.related = depth;
+                    });
+                    list = list.concat(childKRs);
+                    depth = 2;
+                }
+            }
+            list.forEach((o) => {
+                let x = this.okrs.filter(
+                    ({
+                        referenceId
+                    }) => referenceId == o.id
+                );
+                if (x && x.length > 0) {
+                    x.forEach((io) => {
+                        supOKRsX = supOKRsX.concat([{
+                            okr: io,
+                            depth: depth
+                        }]);
+                        io.related = depth;
+                    });
+                    let children = this.findSupOKRsX(x, depth + 1);
+                    if (children && children.length > 0) {
+                        supOKRsX = supOKRsX.concat(children);
+                    }
+                }
+            });
+            return supOKRsX;
+        },
+        findRefOKRsX(list, depth = 1) {
+            let refOKRsX = [];
+            list.forEach((o) => {
+                let x = this.okrs.filter(({
+                    id
+                }) => id == o.referenceId);
+                if (x && x.length > 0) {
+                    x.forEach((io) => {
+                        refOKRsX = refOKRsX.concat({
+                            okr: io,
+                            depth: depth
+                        });
+                        io.related = -depth;
+                    });
+                    let parent = this.findRefOKRsX(x, depth + 1);
+                    if (parent && parent.length > 0) {
+                        refOKRsX = refOKRsX.concat(parent);
+                    }
+                }
+            });
+            return refOKRsX;
+        },
+
+
 
     }
 })
