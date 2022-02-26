@@ -3,4 +3,7 @@ module.exports = {
     'vuetify'
   ],
   runtimeCompiler: true,
+  configureWebpack: {
+    devtool: 'source-map'
+  }
 }
