@@ -10,9 +10,14 @@
             "name": "Launch Edge against localhost",
             "url": "http://localhost:8080",
             "webRoot": "${workspaceFolder}/okrs/src",
-            "breakOnLoad": true,  
+            "breakOnLoad": false,
             "sourceMapPathOverrides": {
-                "webpack:///src/*": "${webRoot}/*",
+
+                "webpack:///src/${webRoot}/*": "${webRoot}/*",
+                "webpack:///src/components/${webRoot}/components/*": "${webRoot}/components/*",
+
+                "webpack:///./src/*.js": "${webRoot}/*.js" // js works
+                
             }
         }
     ]
