@@ -59,6 +59,8 @@
 
 <script>
 import TableList from "./TableList";
+import { mapStores } from "pinia";
+import { useAppStore } from '../store/app'
 
 export default {
   name: "TableList",
@@ -66,6 +68,10 @@ export default {
   components: {
     TableList,
   },
+  computed: {
+    ...mapStores(useAppStore),
+  },
+
   data() {
     return {
       styleSection: {
@@ -99,7 +105,8 @@ export default {
       return teamOKRs;
     },
     selectedOKR: function (event) {
-      global.App.setSelected(event);
+      console.log("selectedOKR", event);
+      this.appStore.setSelected(event);
     },
     relatedIcon: function (okr) {
       let related = okr.related;
