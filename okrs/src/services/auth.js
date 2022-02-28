@@ -45,14 +45,12 @@ export default {
             //     )
             // }
         }
-        console.log('### Azure AD sign-in: enabled\n', config)
+        // console.log('### Azure AD sign-in: enabled\n', config)
 
         // Create our shared/static MSAL app object
         msalApp = new msal.PublicClientApplication(config)
 
         function loginHandler(response) {
-            console.log("loginHandler response:", response);
-            console.log("app", app);
             if (response !== null) {
                 if (app) {
                     app.login();
@@ -133,7 +131,7 @@ export default {
     // Call through to acquireTokenSilent or acquireTokenPopup
     //
     async acquireToken(scopes = ['user.read']) {
-        console.log("### Acquiring token")
+        // console.log("### Acquiring token")
         if (!msalApp) {
             return null
         }
@@ -148,12 +146,12 @@ export default {
         try {
             // 1. Try to acquire token silently
             tokenResp = await msalApp.acquireTokenSilent(accessTokenRequest)
-            console.log('### MSAL acquireTokenSilent was successful')
+            // console.log('### MSAL acquireTokenSilent was successful')
         } catch (err) {
             console.log(err)
             // 2. Silent process might have failed so try via popup
             tokenResp = msalApp.acquireTokenRedirect(accessTokenRequest)
-            console.log('### MSAL acquireTokenPopup was successful')
+            // console.log('### MSAL acquireTokenPopup was successful')
         }
 
         // Just in case check, probably never triggers

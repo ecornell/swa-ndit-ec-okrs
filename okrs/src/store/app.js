@@ -22,8 +22,6 @@ export const useAppStore = defineStore({
          */
         setSelected(_id, refresh = false) {
 
-            console.log('setSelected', _id, refresh)
-
             const dataStore = useDataStore();
 
             if (this.selectedOKR && this.selectedOKR.id == _id && !refresh) {

@@ -211,14 +211,8 @@ export default {
     fullLogout() {
       this.userStore.logout();
     },
-
-    // setSelected(_id, refresh = false) {
-    //   this.appStore.setSelected(_id, refresh);
-    //   this.scrollToTeam(this.appStore.selectedOKR.teamId);
-    // },
    
     async scrollToTeam(team) {
-      console.log("scrollToTeam " + team);
       if (team) {
         await this.$nextTick();
         let element = document.getElementById("team-" + team);
@@ -229,7 +223,6 @@ export default {
       }
     },
     updateSelectedTeam(newValue) {
-      // console.log("updateSelectedTeam ", newValue);
       this.appStore.resetSelected();
       this.scrollToTeam(newValue);
     },
@@ -258,7 +251,6 @@ export default {
 
   watch: {
     settings: function (newValue) {
-      console.log("watch settings : " + newValue);
       if (newValue.includes("filter-related")) {
         if (this.appStore.selectedOKR) {
           this.appStore.setSelected(this.appStore.selectedOKR.id, true);
@@ -270,14 +262,11 @@ export default {
       }
     },
     name: function (newValue) {
-      console.log("user changed " + newValue);
       if (newValue && newValue.size != 0) {
-        // this.loadData();
         this.dataStore.loadData();
       }
     },
     selectedOKR: function(newValue) {
-      console.log("selectedOKR changed " + newValue);
       if (newValue) {
         this.scrollToTeam(newValue.teamId);
       }

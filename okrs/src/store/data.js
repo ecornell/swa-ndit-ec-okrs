@@ -59,7 +59,6 @@ export const useDataStore = defineStore({
     actions: {
 
         async loadData() {
-            console.log('loadData')
             this.loaded = false;
             await this.loadTeams();
             await this.loadPeriods();
@@ -68,7 +67,6 @@ export const useDataStore = defineStore({
         },
 
         async loadTeams() {
-            console.log('loadTeams')
 
             const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
             let resp = await graph.getList(
@@ -106,9 +104,7 @@ export const useDataStore = defineStore({
         },
 
         async loadPeriods() {
-            console.log('loadPeriods')
 
-            // Load Periods
             const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
             let resp = await graph.getList(
                 periodsListId,
@@ -126,9 +122,7 @@ export const useDataStore = defineStore({
         },
 
         async loadOKRs(selectedPeriod) {
-            console.log('loadOKRs')
 
-            // Load OKRs
             const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
             let resp = await graph.getList(
                 okrsListId,
@@ -236,7 +230,6 @@ export const useDataStore = defineStore({
                             o.teamId == okr.teamId &&
                             o.okrNumber == okr.okrNumber.toString().split(".")[0]
                         );
-                        // console.log("Show parent:" + parentObj.id);
                         if (parentObj) {
                             okr.displayOKR = true;
                             if (parentObj.displayOKR == false) {
@@ -253,7 +246,6 @@ export const useDataStore = defineStore({
          * @param {number[]} parentTeams
          */
         getParentTeams(tId, parentTeams = []) {
-            //console.log("getParentTeams " + tId + " : " + parentTeams);
             let t = this.teams.filter(({
                 id
             }) => id == tId)[0];

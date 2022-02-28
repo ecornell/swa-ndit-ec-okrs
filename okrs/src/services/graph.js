@@ -16,7 +16,7 @@ export default {
     // https://docs.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http#response-1
     //
     async getSelf() {
-        console.log('### Getting user details')
+        // console.log('### Getting user details')
         let resp = await callGraph('/me')
         if (resp) {
             let data = await resp.json()
@@ -70,13 +70,13 @@ export default {
             call = call + `&$top=${top}`
         }
 
-        console.log(call)
+        // console.log(call)
         let resp = await callGraph(call)
 
         if (resp) {
             let data = await resp.json()
 
-            console.log(data)
+            // console.log(data)
 
             if (fieldsOnly) {
                 if (select === '') {

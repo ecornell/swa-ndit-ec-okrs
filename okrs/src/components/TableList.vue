@@ -105,7 +105,6 @@ export default {
       return teamOKRs;
     },
     selectedOKR: function (event) {
-      console.log("selectedOKR", event);
       this.appStore.setSelected(event);
     },
     relatedIcon: function (okr) {
@@ -144,7 +143,6 @@ export default {
       }
     },
     toggleTeam: function (team) {
-      console.log("toggleTeam", team.displayOKRs);
       if (!global.App.selectedOKR) {
         team.displayOKRs = !team.displayOKRs;
         global.App.scrollToTeam(team["id"]);

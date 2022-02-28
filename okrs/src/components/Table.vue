@@ -40,9 +40,7 @@ export default {
   }),
 
   watch: {
-    teams(val, oldVal) {
-      console.log("teams changed", val, oldVal);
-      //this.teams = val;
+    teams(val) {
       this.heirarchyTeams = this.listToTree(val);
     },
   },
@@ -55,7 +53,6 @@ export default {
     //
     listToTree(list) {
       let data = [...list];
-      // console.log(data);
       let ID_KEY = "id";
       let PARENT_KEY = "parentId";
       let CHILDREN_KEY = "children";
@@ -84,7 +81,6 @@ export default {
     },
   },
   mounted() {
-    console.log("Table - mounted");
   },
   created: function () {},
 };

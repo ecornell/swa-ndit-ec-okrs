@@ -12,12 +12,9 @@
             "webRoot": "${workspaceFolder}/okrs/src",
             "breakOnLoad": false,
             "sourceMapPathOverrides": {
-
-                "webpack:///src/${webRoot}/*": "${webRoot}/*",
-                "webpack:///src/components/${webRoot}/components/*": "${webRoot}/components/*",
-
-                "webpack:///./src/*.js": "${webRoot}/*.js" // js works
-                
+                "webpack:///src/${webRoot}/*.vue": "${webRoot}/*.vue",
+                "webpack:///src/components/${webRoot}/components/*.vue": "${webRoot}/components/*.vue",
+                "webpack:///./src/*.js": "${webRoot}/*.js"
             }
         }
     ]
