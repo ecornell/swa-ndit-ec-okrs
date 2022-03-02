@@ -201,6 +201,9 @@ export const useDataStore = defineStore({
             if (selectedOKR) {
                 // loop thru all okr and set display state
                 this.okrs.forEach((okr) => {
+
+                    okr.displayOKR = true;
+                    
                     if (okr.id == selectedOKR.id) {
                         //
                     } else if (
@@ -214,7 +217,7 @@ export const useDataStore = defineStore({
                     ) {
                         //
                     } else {
-                        if (appStore.settings.includes("filter-related")) {
+                        if (appStore.isFilterRelated) {
                             okr.displayOKR = false;
                         }
                     }
@@ -223,7 +226,7 @@ export const useDataStore = defineStore({
                     if (
                         okr.displayOKR &&
                         okr.category == "KR" &&
-                        appStore.settings.includes("filter-related")
+                        appStore.isFilterRelated
                     ) {
                         let parentObj = this.okrs.find(
                             (o) =>

@@ -152,7 +152,10 @@
           <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
         <Table :okrs="dataStore.okrs" :settings="appStore.settings" />
-        <Details :selectedOKR="appStore.selectedOKR" :detailsVisible="detailsVisible" />
+        <Details
+          :selectedOKR="appStore.selectedOKR"
+          :detailsVisible="detailsVisible"
+        />
       </template>
     </v-main>
   </v-app>
@@ -211,7 +214,7 @@ export default {
     fullLogout() {
       this.userStore.logout();
     },
-   
+
     async scrollToTeam(team) {
       if (team) {
         await this.$nextTick();
@@ -266,7 +269,7 @@ export default {
         this.dataStore.loadData();
       }
     },
-    selectedOKR: function(newValue) {
+    selectedOKR: function (newValue) {
       if (newValue) {
         this.scrollToTeam(newValue.teamId);
       }

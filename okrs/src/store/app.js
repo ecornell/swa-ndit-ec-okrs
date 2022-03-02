@@ -13,42 +13,52 @@ export const useAppStore = defineStore({
         selectedPeriod: "1",
         settings: ["filter-related"],
     }),
-    getters: {},
+    getters: {
+        isFilterRelated: state => {
+            return state.settings.includes("filter-related");
+        }
+
+    },
     actions: {
 
         /**
          * @param {number} _id - Selected OKR ID
          * @param {boolean} refresh
          */
-        setSelected(_id, refresh = false) {
+        setSelected(_id
+            , refresh = false
+        ) {
 
             const dataStore = useDataStore();
 
             if (this.selectedOKR && this.selectedOKR.id == _id && !refresh) {
-                this.resetSelected();
+                if (this.isFilterRelated) {
+                    this.settings = this.settings.filter(setting => setting != "filter-related");
+                } else {
+                    this.settings.push("filter-related");
+                }
+
             } else {
                 this.resetSelected();
-                
+
                 this.selectedOKR = dataStore.okrs.find(o => o.id == _id);
                 this.selectedOKR.related = 0;
 
                 dataStore.updateRelated(this.selectedOKR);
-                
-                //
-
-                dataStore.updateOkrDisplayFlag(this.selectedOKR);
-                
-
-                dataStore.teams.forEach((team) => {
-                    if (!dataStore.relatedTeams.includes(parseInt(team.id))) {
-                        team.displayTeam = false;
-                    }
-                });
-
-               // this.scrollToTeam(this.appStore.selectedOKR.teamId);
             }
+
+            // Update display statuses                        
+            dataStore.teams.forEach((team) => {
+                team.displayOKRs = true;
+                if (this.isFilterRelated && !dataStore.relatedTeams.includes(parseInt(team.id))) {
+                    team.displayTeam = false;
+                } else {
+                    team.displayTeam = true;
+                }
+            });
+             dataStore.updateOkrDisplayFlag(this.selectedOKR);
         },
-        
+
         resetSelected() {
             const dataStore = useDataStore();
 
@@ -56,12 +66,7 @@ export const useAppStore = defineStore({
             this.refOKRsX = [];
             this.supOKRsX = [];
 
-            dataStore.teams.forEach((team) => {
-                team.displayTeam = true;
-                team.displayOKRs = true;
-            });
             dataStore.okrs.forEach((okr) => {
-                okr.displayOKR = true;
                 okr.related = null;
             });
         },
