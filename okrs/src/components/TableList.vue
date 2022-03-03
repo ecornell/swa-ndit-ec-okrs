@@ -159,7 +159,7 @@ export default {
 
 .table-okr-team {
   font-weight: 500;
-  background-color: #f3f3ff;
+  background-color: #f3f6ff;
   padding: 0 0 0 5px;
   color: #3e42bd;
   line-height: 1.2;

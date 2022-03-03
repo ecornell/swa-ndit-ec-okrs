@@ -61,9 +61,9 @@
               {{ selectedOKR.team }}
             </v-col>
 
-            <v-col cols="2"><span class="grey--text">Confidence</span></v-col>
+            <v-col cols="2"><span class="grey--text">Progress</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR.confidence }}
+              {{ (selectedOKR.progress ? selectedOKR.progress : 0) * 100 }}%
             </v-col>
           </v-row>
 
@@ -72,10 +72,9 @@
             <v-col cols="4">
               {{ selectedOKR.owner }}
             </v-col>
-
-            <v-col cols="2"><span class="grey--text">Progress</span></v-col>
+            <v-col cols="2"><span class="grey--text">Confidence</span></v-col>
             <v-col cols="4">
-              {{ selectedOKR.progress }}
+              {{ (selectedOKR.confidence ? selectedOKR.confidence : 0) * 100 }}%
             </v-col>
           </v-row>
 

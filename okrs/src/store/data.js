@@ -193,6 +193,14 @@ export const useDataStore = defineStore({
             });
         },
 
+        showAll() {
+            this.teams.forEach((t) => {
+                t.displayTeam = true;
+            });
+            this.okrs.forEach((okr) => {
+                okr.displayOKR = true;
+            });
+        },
 
         updateOkrDisplayFlag(selectedOKR) {
 
