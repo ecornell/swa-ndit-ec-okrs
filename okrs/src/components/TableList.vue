@@ -29,7 +29,8 @@
         :key="okr['id']"
         v-on:click="selectedOKR(okr['id'])"
         dense
-        class="table-okr-row"        
+        class="table-okr-row"
+        :class="classRow(okr)"        
       >
         <v-col cols="1"
           ><v-icon dense color="blue darken-2">
@@ -93,6 +94,13 @@ export default {
           classSection += " table-okr-section-nth";
         }
         return classSection;
+      },
+      classRow: (okr) => {
+        let classRow = null;
+        if (okr.related == 0) {
+          classRow += " table-okr-selected";
+        }
+        return classRow;
       },
     };
   },
@@ -169,6 +177,10 @@ export default {
 }
 .table-ork-team-hidden {
   display: none;
+}
+
+.table-okr-selected {
+  background-color: #edf9ff;
 }
 
 .table-okr-cat-obj {
