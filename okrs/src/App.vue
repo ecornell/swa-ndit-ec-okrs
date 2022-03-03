@@ -226,7 +226,7 @@ export default {
       }
     },
     updateSelectedTeam(newValue) {
-      this.appStore.resetSelected();
+      this.dataStore.showAll();
       this.scrollToTeam(newValue);
     },
     handleScroll() {
