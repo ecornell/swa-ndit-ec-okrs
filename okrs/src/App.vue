@@ -1,24 +1,6 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" app>
-      <v-subheader>Parameters</v-subheader>
-
-      <v-list subheader sinlge-line flat>
-        <v-select
-          v-model="appStore.selectedPeriod"
-          :items="dataStore.periods"
-          dense
-          auto-select-first
-          label="OKR Period"
-          item-text="title"
-          item-value="id"
-          outlined
-          hint="Select a period"
-          hide-details="false"
-          style="margin: 8px 4px 0 8px"
-        ></v-select>
-      </v-list>
-
       <v-subheader>Filters</v-subheader>
 
       <v-list subheader sinlge-line flat>
@@ -74,8 +56,21 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title class="d-none d-sm-block">NDIT OKRs</v-toolbar-title>
-
-      <v-spacer></v-spacer>
+     
+        <v-select
+          v-model="appStore.selectedPeriod"
+          :items="dataStore.periods"
+          dense
+          auto-select-first
+          label="OKR Period"
+          item-text="title"
+          item-value="id"
+          outlined
+          hint="Select a period"
+          hide-details="false"
+          style="margin: 0 4px 0 16px; max-width: 200px"
+          @change="updateSelectedPeriod"
+        ></v-select>
 
       <v-autocomplete
         v-model="appStore.selectedTeam"
@@ -89,6 +84,7 @@
         hint="Select a team"
         hide-details="true"
         @change="updateSelectedTeam"
+        style="margin: 0 12px 0 0;"
       ></v-autocomplete>
 
       <v-spacer></v-spacer>
@@ -228,6 +224,11 @@ export default {
     updateSelectedTeam(newValue) {
       this.dataStore.showAll();
       this.scrollToTeam(newValue);
+    },
+    updateSelectedPeriod() {
+      this.dataStore.reloadOKRs();
+      this.dataStore.showAll();
+      this.scrollToTeam(1);
     },
     handleScroll() {
       if (this.windowPosition != window.pageYOffset) {

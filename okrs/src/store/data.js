@@ -66,6 +66,12 @@ export const useDataStore = defineStore({
             this.loaded = true;
         },
 
+        async reloadOKRs() {
+            this.loaded = false;
+            await this.loadOKRs(1);
+            this.loaded = true;
+        },
+
         async loadTeams() {
 
             const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
@@ -105,6 +111,8 @@ export const useDataStore = defineStore({
 
         async loadPeriods() {
 
+            const appStore = useAppStore();
+
             const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
             let resp = await graph.getList(
                 periodsListId,
@@ -119,15 +127,19 @@ export const useDataStore = defineStore({
                 p.endDate = period.EndDate;
                 return p;
             });
+
+            appStore.selectedPeriod = this.periods[0].id;
         },
 
-        async loadOKRs(selectedPeriod) {
+        async loadOKRs() {
+
+            const appStore = useAppStore();
 
             const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
             let resp = await graph.getList(
                 okrsListId,
                 "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
-                `fields/Period0LookupId eq '${selectedPeriod}'`
+                `fields/Period0LookupId eq '${appStore.selectedPeriod}'`
             );
 
             this.okrs = resp.map(okr => {
