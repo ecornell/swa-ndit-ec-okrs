@@ -33,7 +33,7 @@
         :class="classRow(okr)"        
       >
         <v-col cols="1"
-          ><v-icon dense color="blue darken-2">
+          ><v-icon dense color="#135790">
             {{ relatedIcon(okr) }}
           </v-icon></v-col
         >
@@ -167,20 +167,20 @@ export default {
 
 .table-okr-team {
   font-weight: 500;
-  background-color: #f3f6ff;
+  background-color: #f3f3f2;
   padding: 0 0 0 5px;
-  color: #3e42bd;
+  color: #292928;
   line-height: 1.2;
 }
 .table-okr-team:hover {
-  background-color: #dfdfff;
+  background-color: #c1c1bf;
 }
 .table-ork-team-hidden {
   display: none;
 }
 
 .table-okr-selected {
-  background-color: #edf9ff;
+  background-color: #e7f3fc;
 }
 
 .table-okr-cat-obj {
@@ -203,27 +203,27 @@ export default {
 }
 
 .table-okr-section {
-  border-top: #c8c8ff 1px solid;
+  border-top: #c0c0be 1px solid;
 }
 .table-okr-section-1 {
   margin: 4px 0 0 -4px;
   padding: 4px 4px 0 4px;
-  border-left: #e7e7fd 2px solid;
+  border-left: #c6e1f7 3px solid;
 }
 .table-okr-section-nth {
   margin: 4px -3px 0 -3px;
   padding: 4px 3px 0 4px;
 }
 .table-okr-section-2 {
-  border-left: #c8c8ff 2px solid;
+  border-left: #8cc2f0 3px solid;
 }
 .table-okr-section-3 {
-  border-left: #a5a5f5 2px solid;
+  border-left: #53a4e8 3px solid;
 }
 .table-okr-section-4 {
-  border-left: #6f6fef 2px solid;
+  border-left: #1d85dd 3px solid;
 }
 .table-okr-section-5 {
-  border-left: #5454f7 2px solid;
+  border-left: #1663a3 3px solid;
 }
 </style>

@@ -96,7 +96,7 @@
         transition="slide-y-reverse-transition"
       >
         <template v-slot:activator>
-          <v-btn v-model="fabDisplayOptions" fab x-small color="blue">
+          <v-btn v-model="fabDisplayOptions" fab x-small color="secondary">
             <v-icon v-if="fabDisplayOptions"> mdi-close </v-icon>
             <v-icon v-else> mdi-filter-variant </v-icon>
           </v-btn>
@@ -107,7 +107,7 @@
             <v-btn
               fab
               x-small
-              color="indigo"
+              color="secondary"
               v-bind="attrs"
               v-on="on"
               v-on:click="collapseAll()"
@@ -123,7 +123,7 @@
             <v-btn
               fab
               x-small
-              color="indigo"
+              color="secondary"
               v-bind="attrs"
               v-on="on"
               v-on:click="expandAll()"
