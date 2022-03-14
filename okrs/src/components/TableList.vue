@@ -182,7 +182,7 @@ export default {
 }
 
 .table-okr-selected {
-  background-color: #e7f3fc;
+  background-color: #e4ffe3;
 }
 
 .table-okr-cat-obj {
