@@ -1,20 +1,27 @@
 <template>
   <v-container class="table-container">
-    <v-row dense class="blue-grey--text table-okr-header-row">
-      <v-col cols="1" style="max-width: 100%;"></v-col>
-      <v-col cols="1" style="max-width: 100%;" v-if="settings.includes('show-id')">ID</v-col>
-      <v-col cols="1" style="max-width: 100%;">OKR#</v-col>
-      <v-col cols=""  style="max-width: 100%;" class="text-center">Title</v-col>
-      <v-col cols="1" style="max-width: 100%;">Progress</v-col>
-    </v-row>
-    <TableList
-      v-for="team in heirarchyTeams"
-      v-bind:team="team"
-      v-bind:okrs="okrs"
-      v-bind:settings="settings"
-      v-bind:key="team.id"
-      :depth="1"
-    ></TableList>
+    <div class="table-main">
+      <v-row dense class="blue-grey--text table-okr-header-row">
+        <v-col cols="1" style="max-width: 100%"></v-col>
+        <v-col
+          cols="1"
+          style="max-width: 100%"
+          v-if="settings.includes('show-id')"
+          >ID</v-col
+        >
+        <v-col cols="1" style="max-width: 100%">OKR#</v-col>
+        <v-col cols="" style="max-width: 100%" class="text-center">Title</v-col>
+        <v-col cols="1" style="max-width: 100%">Progress</v-col>
+      </v-row>
+      <TableList
+        v-for="team in heirarchyTeams"
+        v-bind:team="team"
+        v-bind:okrs="okrs"
+        v-bind:settings="settings"
+        v-bind:key="team.id"
+        :depth="1"
+      ></TableList>
+    </div>
   </v-container>
 </template>
 
@@ -80,15 +87,19 @@ export default {
       return data;
     },
   },
-  mounted() {
-  },
+  mounted() {},
   created: function () {},
 };
 </script>
 
 <style scoped>
-.table-container{
-  margin-bottom: 500px;  
+.table-container {
+  margin: 8px auto 500px auto;
+}
+.table-main {
+  -webkit-box-shadow: 2px 5px 13px -5px #4c799f,
+    -2px 47px 15px -5px rgba(0, 0, 0, 0);
+  box-shadow: 2px 5px 13px -5px #4c799f, -2px 47px 15px -5px rgba(0, 0, 0, 0);
 }
 .table-okr-header-row {
   line-height: 0.8;
