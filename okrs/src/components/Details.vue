@@ -112,11 +112,9 @@ export default {
     getCoOwners: function () {
       if (this.selectedOKR.coOwners) {
         if (this.selectedOKR.coOwners.length > 1) {
-          let coOwners = "";
-          this.selectedOKR.coOwners.forEach((co) => {
-            coOwners = coOwners + co["LookupValue"] + ",";
-          });
-          return coOwners;
+          return this.selectedOKR.coOwners.map((co) => co["LookupValue"]).join(
+            ", "
+          );
         } else {
           return this.selectedOKR.coOwners[0]["LookupValue"];
         }

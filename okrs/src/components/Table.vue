@@ -87,9 +87,15 @@ export default {
 </script>
 
 <style scoped>
+.table-container{
+  margin-bottom: 500px;  
+}
 .table-okr-header-row {
   line-height: 0.8;
   font-weight: 300;
   font-size: 0.9em;
+  background-color: #ffffff;
+  padding: 4px 0px 4px 0;
+  margin: 5px 0px -4px -3px;
 }
 </style>

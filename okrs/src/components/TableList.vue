@@ -164,7 +164,9 @@ export default {
 .okr-hidden {
   display: none !important;
 }
-
+.table-okr-row{
+  padding: 0 4px 0 0;
+}
 .table-okr-team {
   font-weight: 500;
   background-color: #f3f3f2;
@@ -204,6 +206,8 @@ export default {
 
 .table-okr-section {
   border-top: #c0c0be 1px solid;
+  /* border-bottom: #c0c0be 1px solid; */
+  background-color: #fdfdff;
 }
 .table-okr-section-1 {
   margin: 4px 0 0 -4px;
