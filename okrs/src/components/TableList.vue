@@ -171,8 +171,9 @@ export default {
   font-weight: 500;
   background-color: #f3f3f2;
   padding: 0 0 0 5px;
+  margin:-4px -4px -4px -4px;
   color: #292928;
-  line-height: 1.2;
+  /* line-height: 1.2; */
 }
 .table-okr-team:hover {
   background-color: #c1c1bf;
