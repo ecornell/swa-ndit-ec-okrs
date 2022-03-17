@@ -14,7 +14,10 @@ let insightKey = process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY;
 if (insightKey) {
   const appInsights = new ApplicationInsights({
     config: {
-      instrumentationKey: insightKey
+      instrumentationKey: insightKey,
+      disableFetchTracking: false,
+      enableAutoRouteTracking: true,
+      enableAjaxPerfTracking: true,
     }
   });
   appInsights.loadAppInsights();

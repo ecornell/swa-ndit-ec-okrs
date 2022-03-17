@@ -42,6 +42,19 @@
           <v-btn block v-if="userStore.name" depressed @click="fullLogout">
             Logout
           </v-btn>
+
+          <div class="text-center" style="color: grey; font-size:.7em;">
+            build:
+            <a
+              :href="`https://github.com/ndgov/swa-ndit-ec-okrs/commits/master`"
+              target="_blank"
+              >{{ appStore.getBuildHash }}</a
+            >&nbsp;&nbsp;|&nbsp;&nbsp;<a
+              :href="`https://github.com/ndgov/swa-ndit-ec-okrs/issues`"
+              target="_blank"
+              >issues</a
+            >
+          </div>
         </div>
       </template>
     </v-navigation-drawer>
@@ -56,21 +69,21 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title class="d-none d-sm-block">NDIT OKRs</v-toolbar-title>
-     
-        <v-select
-          v-model="appStore.selectedPeriod"
-          :items="dataStore.periods"
-          dense
-          auto-select-first
-          label="OKR Period"
-          item-text="title"
-          item-value="id"
-          outlined
-          hint="Select a period"
-          hide-details="false"
-          style="margin: 0 4px 0 16px; max-width: 200px"
-          @change="updateSelectedPeriod"
-        ></v-select>
+
+      <v-select
+        v-model="appStore.selectedPeriod"
+        :items="dataStore.periods"
+        dense
+        auto-select-first
+        label="OKR Period"
+        item-text="title"
+        item-value="id"
+        outlined
+        hint="Select a period"
+        hide-details="false"
+        style="margin: 0 4px 0 16px; max-width: 200px"
+        @change="updateSelectedPeriod"
+      ></v-select>
 
       <v-autocomplete
         v-model="appStore.selectedTeam"
@@ -84,7 +97,7 @@
         hint="Select a team"
         hide-details="true"
         @change="updateSelectedTeam"
-        style="margin: 0 12px 0 0;"
+        style="margin: 0 12px 0 0"
       ></v-autocomplete>
 
       <v-spacer></v-spacer>

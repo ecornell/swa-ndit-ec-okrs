@@ -16,8 +16,10 @@ export const useAppStore = defineStore({
     getters: {
         isFilterRelated: state => {
             return state.settings.includes("filter-related");
+        },
+        getBuildHash: () => {
+            return JSON.parse(process.env.COMMIT_HASH);
         }
-
     },
     actions: {
 
