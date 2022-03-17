@@ -10,19 +10,20 @@ import {
   ApplicationInsights
 } from '@microsoft/applicationinsights-web'
 
-let insightKey = process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY;
-if (insightKey) {
-  const appInsights = new ApplicationInsights({
-    config: {
-      instrumentationKey: insightKey,
-      disableFetchTracking: false,
-      enableAutoRouteTracking: true,
-      enableAjaxPerfTracking: true,
-    }
-  });
-  appInsights.loadAppInsights();
-  appInsights.trackPageView();
-}
+
+console.log(process.env.VUE_APP_APPINSIGHTS)
+const appInsights = new ApplicationInsights({
+  config: {
+    instrumentationKey: process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY,
+    disableFetchTracking: false,
+    enableAutoRouteTracking: true,
+    enableAjaxPerfTracking: true,
+    disableTelemetry: !process.env.VUE_APP_APPINSIGHTS,
+  }
+});
+global.appInsights = appInsights;
+appInsights.loadAppInsights();
+appInsights.trackPageView();
 
 Vue.use(VueCompositionAPI)
 Vue.use(PiniaPlugin)

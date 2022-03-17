@@ -1,6 +1,7 @@
 import {
     defineStore
 } from 'pinia'
+
 import auth from "../services/auth";
 
 export const useUserStore = defineStore({
@@ -21,6 +22,8 @@ export const useUserStore = defineStore({
                 if (user) {
                     this.name = user.name;
                     this.username = user.username;
+
+                    global.appInsights.setAuthenticatedUserContext(user.username);
                 }
               } else {
                 this.error = "VUE_APP_CLIENT_ID is not set";

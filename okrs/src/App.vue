@@ -235,10 +235,24 @@ export default {
       }
     },
     updateSelectedTeam(newValue) {
+      global.appInsights.trackEvent({
+        name: "updateSelectedTeam", 
+        properties: {
+          team: this.dataStore.teams.find(t => t.id === newValue).title
+        }
+      });
+
       this.dataStore.showAll();
       this.scrollToTeam(newValue);
     },
-    updateSelectedPeriod() {
+    updateSelectedPeriod(newValue) {
+      global.appInsights.trackEvent({
+        name: "updateSelectedPeriod", 
+        properties: {
+          period: this.dataStore.periods.find(p => p.id === newValue).title
+        }
+      });
+
       this.dataStore.reloadOKRs();
       this.dataStore.showAll();
       this.scrollToTeam(1);
@@ -284,6 +298,13 @@ export default {
       }
     },
     selectedOKR: function (newValue) {
+      global.appInsights.trackEvent({
+        name: "selectedOKR", 
+        properties: {
+          okrId: `${newValue.id}-${newValue.okrId}`,
+        }
+      });
+
       if (newValue) {
         this.scrollToTeam(newValue.teamId);
       }
