@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^2.22.0",
+    "@microsoft/applicationinsights-web": "^2.7.4",
     "@vue/composition-api": "^1.1.0",
     "core-js": "^3.6.5",
     "pinia": "^0.5.4",
