@@ -14,7 +14,7 @@ let insightKey = process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY;
 if (insightKey) {
   const appInsights = new ApplicationInsights({
     config: {
-      instrumentationKey: process.env.VUE_APP_APP_INSIGHT_KEY
+      instrumentationKey: insightKey
     }
   });
   appInsights.loadAppInsights();
