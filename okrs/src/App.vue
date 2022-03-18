@@ -71,7 +71,7 @@
       <v-toolbar-title class="d-none d-sm-block">NDIT OKRs</v-toolbar-title>
 
       <v-select
-        v-model="appStore.selectedPeriod"
+        v-model="appStore.selectedPeriodID"
         :items="dataStore.periods"
         dense
         auto-select-first
@@ -253,6 +253,7 @@ export default {
         }
       });
 
+      this.appStore.selectedPeriod = this.dataStore.periods.find(p => p.id === newValue);
       this.dataStore.reloadOKRs();
       this.dataStore.showAll();
       this.scrollToTeam(1);

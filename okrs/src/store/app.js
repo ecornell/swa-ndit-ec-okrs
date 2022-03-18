@@ -10,7 +10,8 @@ export const useAppStore = defineStore({
     state: () => ({
         selectedOKR: null,
         selectedTeam: null,
-        selectedPeriod: "1",
+        selectedPeriodID: "1",
+        selectedPeriod: null,
         settings: ["filter-related"],
     }),
     getters: {

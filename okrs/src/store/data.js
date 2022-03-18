@@ -23,6 +23,8 @@ export const useDataStore = defineStore({
          * title: string,
          * startDate: string,
          * endtDate: string,
+         * percentComplete: number,
+         * current: boolean,
          *  }[]} */
         periods: [],
         /** @type {{
@@ -47,6 +49,8 @@ export const useDataStore = defineStore({
          * confidence: number,
          * displayOKR: boolean,
          * related: number,
+         * risk: number,
+         * rollupRisk: number,
          * }[]} */
         okrs: [],
         loaded: false,
@@ -62,13 +66,13 @@ export const useDataStore = defineStore({
             this.loaded = false;
             await this.loadTeams();
             await this.loadPeriods();
-            await this.loadOKRs(1);
+            await this.loadOKRs();
             this.loaded = true;
         },
 
         async reloadOKRs() {
             this.loaded = false;
-            await this.loadOKRs(1);
+            await this.loadOKRs();
             this.loaded = true;
         },
 
@@ -125,10 +129,27 @@ export const useDataStore = defineStore({
                 p.title = period.Title;
                 p.startDate = period.StartDate;
                 p.endDate = period.EndDate;
+
+                let startDate = new Date(period.StartDate);
+                let endDate = new Date(period.EndDate);
+                let today = new Date();
+
+                p.percentComplete = Math.round((today - startDate) / (endDate - startDate) * 100);
+                if (p.percentComplete > 100) {
+                    p.percentComplete = 100;
+                    p.current = false;
+                } else if (p.percentComplete < 0) {
+                    p.percentComplete = 0;
+                    p.current = false;
+                } else {
+                    p.current = true;
+                    appStore.selectedPeriodID = p.id;
+                    appStore.selectedPeriod = p;
+                }
                 return p;
             });
 
-            appStore.selectedPeriod = this.periods[0].id;
+
         },
 
         async loadOKRs() {
@@ -139,7 +160,7 @@ export const useDataStore = defineStore({
             let resp = await graph.getList(
                 okrsListId,
                 "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
-                `fields/Period0LookupId eq '${appStore.selectedPeriod}'`
+                `fields/Period0LookupId eq '${appStore.selectedPeriodID}'`
             );
 
             this.okrs = resp.map(okr => {
@@ -168,6 +189,8 @@ export const useDataStore = defineStore({
                 o.related = null;
                 return o;
             });
+
+            this.calculateRisk();
 
             this.okrs.sort((a, b) => {
                 return a.okrId - b.okrId;
@@ -223,7 +246,7 @@ export const useDataStore = defineStore({
                 this.okrs.forEach((okr) => {
 
                     okr.displayOKR = true;
-                    
+
                     if (okr.id == selectedOKR.id) {
                         //
                     } else if (
@@ -352,7 +375,31 @@ export const useDataStore = defineStore({
             return refOKRsX;
         },
 
+        calculateRisk() {
+            const appStore = useAppStore();
+            let periodPercentComplete = appStore.selectedPeriod.percentComplete
+            this.okrs.forEach(okr => {
+                if (okr.category == "KR") {
+                    let progress = okr.progress ? okr.progress : 0;
+                    let progressDiff = parseInt(periodPercentComplete - (progress * 100));
+                    if (progressDiff < 0) {
+                        progressDiff = 0;
+                    }
+                    okr.risk = progressDiff;
+                }
+            });
 
+            this.okrs.forEach(okr => {
+                let supOKRs = this.findSupOKRsX([okr]);
+                let totalRisk = 0;
+                if (supOKRs && supOKRs.length > 0) {
+                    supOKRs.forEach(o => {
+                        totalRisk += o.okr.risk ? o.okr.risk : 0;
+                    });
+                    okr.rollupRisk = Math.round(totalRisk / supOKRs.length);
+                }
+            });
 
+        }
     }
 })

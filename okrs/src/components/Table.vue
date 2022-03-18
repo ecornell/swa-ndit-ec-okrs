@@ -11,7 +11,7 @@
         >
         <v-col cols="1" style="max-width: 100%">OKR#</v-col>
         <v-col cols="" style="max-width: 100%" class="text-center">Title</v-col>
-        <v-col cols="1" style="max-width: 100%">Progress</v-col>
+        <v-col cols="1" style="max-width: 100%">Progress/Risk</v-col>
       </v-row>
       <TableList
         v-for="team in heirarchyTeams"

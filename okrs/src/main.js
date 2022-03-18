@@ -11,7 +11,6 @@ import {
 } from '@microsoft/applicationinsights-web'
 
 
-console.log(process.env.VUE_APP_APPINSIGHTS)
 const appInsights = new ApplicationInsights({
   config: {
     instrumentationKey: process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY,

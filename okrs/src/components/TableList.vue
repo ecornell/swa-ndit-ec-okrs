@@ -25,12 +25,12 @@
     </v-row>
     <div v-if="team.displayOKRs" :id="'team-okrs' + team.id">
       <v-row
-        v-for="okr in okrsByTeam(team.id).filter(okr => okr.displayOKR)"
+        v-for="okr in okrsByTeam(team.id).filter((okr) => okr.displayOKR)"
         :key="okr['id']"
         v-on:click="selectedOKR(okr['id'])"
         dense
         class="table-okr-row"
-        :class="classRow(okr)"        
+        :class="classRow(okr)"
       >
         <v-col cols="1"
           ><v-icon dense color="#135790">
@@ -44,7 +44,13 @@
           >{{ okr["category"] }} {{ okr["okrNumber"] }}</v-col
         >
         <v-col cols="" :class="classTitle(okr)">{{ okr["title"] }}</v-col>
-        <v-col cols="1" class="text-right">{{ displayProgress(okr) }}</v-col>
+        <v-col cols="1" class="text-right" style="flex: 0 0 100px;max-width: 100px;"
+          >{{ displayProgress(okr) }} <v-icon dense :color="displayRiskIconColor(okr)">
+            {{ displayRiskIcon(okr) }}
+          </v-icon> <v-icon dense :color="displayRollupRiskIconColor(okr)">
+            {{ displayRollupRiskIcon(okr) }}
+          </v-icon> </v-col
+        >
       </v-row>
     </div>
     <TableList
@@ -61,7 +67,7 @@
 <script>
 import TableList from "./TableList";
 import { mapStores } from "pinia";
-import { useAppStore } from '../store/app'
+import { useAppStore } from "../store/app";
 
 export default {
   name: "TableList",
@@ -79,9 +85,7 @@ export default {
         //marginLeft: this.depth * 10 + "px",
       },
       classCategory: (okr) => {
-        return okr.category == "Obj"
-          ? "table-okr-cat-obj"
-          : "table-okr-cat-kr";
+        return okr.category == "Obj" ? "table-okr-cat-obj" : "table-okr-cat-kr";
       },
       classTitle: (okr) => {
         return okr.category == "Obj"
@@ -150,6 +154,71 @@ export default {
         return progress.toFixed(0) + "%";
       }
     },
+
+    displayRiskIcon: function (okr) {
+      let riskDisplayIcon = "";
+      if (okr.risk == null) {
+        return riskDisplayIcon;
+      } else {
+        let risk = okr.risk;
+        if (risk < 20) {
+          riskDisplayIcon = 'mdi-check-circle-outline';
+        } else if (risk < 40) {
+          riskDisplayIcon = "mdi-alert-outline";
+        } else {
+          riskDisplayIcon = "mdi-alert-octagon-outline";
+        }
+        return riskDisplayIcon;
+      }
+    },
+    displayRiskIconColor: function (okr) {
+      let riskDisplayIconColor = "blue";
+      if (okr.risk == null) {
+        return riskDisplayIconColor;
+      } else {
+        let risk = okr.risk;
+        if (risk < 20) {
+          riskDisplayIconColor = '#6abe26';
+        } else if (risk < 40) {
+          riskDisplayIconColor = "#ffb017";
+        } else {
+          riskDisplayIconColor = "#ff1717";
+        }
+        return riskDisplayIconColor;
+      }
+    },
+    displayRollupRiskIcon: function (okr) {
+      let riskDisplayIcon = "mdi-chevron-down-box";
+      if (okr.rollupRisk == null) {
+        return riskDisplayIcon;
+      } else {
+        let risk = okr.rollupRisk;
+        if (risk < 20) {
+          riskDisplayIcon = 'mdi-chevron-down-box';
+        } else if (risk < 40) {
+          riskDisplayIcon = "mdi-chevron-down-box";
+        } else {
+          riskDisplayIcon = "mdi-chevron-down-box";
+        }
+        return riskDisplayIcon;
+      }
+    },
+    displayRollupRiskIconColor: function (okr) {
+      let riskDisplayIconColor = "rgb(0 0 0 / 0%)";
+      if (okr.rollupRisk == null) {
+        return riskDisplayIconColor;
+      } else {
+        let risk = okr.rollupRisk;
+        if (risk < 20) {
+          riskDisplayIconColor = '#6abe26';
+        } else if (risk < 40) {
+          riskDisplayIconColor = "#ffb017";
+        } else {
+          riskDisplayIconColor = "#ff1717";
+        }
+        return riskDisplayIconColor;
+      }
+    },
     toggleTeam: function (team) {
       if (!global.App.selectedOKR) {
         team.displayOKRs = !team.displayOKRs;
@@ -164,14 +233,14 @@ export default {
 .okr-hidden {
   display: none !important;
 }
-.table-okr-row{
+.table-okr-row {
   padding: 0 4px 0 0;
 }
 .table-okr-team {
   font-weight: 500;
   background-color: #f3f3f2;
   padding: 0 0 0 5px;
-  margin:-4px -4px -4px -4px;
+  margin: -4px -4px -4px -4px;
   color: #292928;
   /* line-height: 1.2; */
 }
