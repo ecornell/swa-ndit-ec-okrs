@@ -398,6 +398,7 @@ export const useDataStore = defineStore({
                     });
                     okr.rollupRisk = Math.round(totalRisk / supOKRs.length);
                 }
+                okr.related = null; // reset related flag
             });
 
         }
