@@ -51,6 +51,7 @@ export const useDataStore = defineStore({
          * related: number,
          * risk: number,
          * rollupRisk: number,
+         * supOKRs: [],
          * }[]} */
         okrs: [],
         loaded: false,
@@ -391,6 +392,8 @@ export const useDataStore = defineStore({
 
             this.okrs.forEach(okr => {
                 let supOKRs = this.findSupOKRsX([okr]);
+                okr.supOKRs = supOKRs;
+
                 let totalRisk = 0;
                 if (supOKRs && supOKRs.length > 0) {
                     supOKRs.forEach(o => {
