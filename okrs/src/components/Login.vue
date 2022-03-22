@@ -1,14 +1,12 @@
 <template>
-  <v-container style="margin:30px 0 0 0;">
+  <v-container style="margin: 30px 0 0 0">
     <v-card class="mx-auto" max-width="344" outlined elevation="2">
       <v-list-item three-line>
         <h1 class="title is-5">Please login to access the OKR information</h1>
       </v-list-item>
-        <v-card-actions>
-          <v-btn
-      depressed
-      color="primary" @click="doLogin"> Login </v-btn>
-        </v-card-actions>
+      <v-card-actions>
+        <v-btn depressed color="primary" @click="doLogin"> Login </v-btn>
+      </v-card-actions>
       <div v-if="error" class="notification is-warning mt-4">
         {{ error }}
       </div>
@@ -17,7 +15,8 @@
 </template>
 
 <script>
-import auth from "../services/auth";
+import { mapStores } from "pinia";
+import { useUserStore } from "../store/user";
 
 export default {
   data: function () {
@@ -26,14 +25,18 @@ export default {
     };
   },
 
+  computed: {
+    ...mapStores(useUserStore),
+  },
+
   methods: {
-    async doLogin() {
+    doLogin() {
       try {
-        auth.login();
+        this.userStore.login(true);
       } catch (err) {
         this.error = err.toString();
       }
-    },    
+    },
   },
 };
 </script>

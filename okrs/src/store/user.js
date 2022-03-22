@@ -14,7 +14,7 @@ export const useUserStore = defineStore({
     }),
     getters: {},
     actions: {
-        login() {
+        login(prompt = false) {
             if (process.env.VUE_APP_CLIENT_ID) {
                 auth.configure(process.env.VUE_APP_CLIENT_ID, this);
                 // Restore any cached or saved local user
@@ -24,6 +24,8 @@ export const useUserStore = defineStore({
                     this.username = user.username;
 
                     global.appInsights.setAuthenticatedUserContext(user.username);
+                } else if(prompt) {
+                    auth.login();
                 }
               } else {
                 this.error = "VUE_APP_CLIENT_ID is not set";

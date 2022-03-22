@@ -210,7 +210,9 @@ export default {
   created() {
     window.addEventListener("scroll", this.handleScroll);
     this.userStore.login();
-    this.dataStore.loadData();
+    if (this.userStore.name) {
+      this.dataStore.loadData();
+    }
   },
 
   destroyed() {
