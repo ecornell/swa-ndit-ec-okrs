@@ -91,6 +91,14 @@
               {{ selectedOKR.reference }}
             </v-col>
           </v-row>
+
+          <v-row dense>
+            <v-col cols="2"><span class="grey--text">Notes</span></v-col>
+            <v-col cols="10">
+              <div v-html="getNotes()"></div>
+            </v-col>
+          </v-row>
+
         </v-container>
       </v-sheet>
     </template>
@@ -118,6 +126,11 @@ export default {
         } else {
           return this.selectedOKR.coOwners[0]["LookupValue"];
         }
+      }
+    },
+    getNotes: function () {
+      if (this.selectedOKR.notes) {
+          return String(this.selectedOKR.notes).replace(/\n/g, "<br />");
       }
     },
     toggleDetails: function () {

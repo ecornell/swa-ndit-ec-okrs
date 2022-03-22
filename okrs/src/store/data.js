@@ -49,6 +49,7 @@ export const useDataStore = defineStore({
          * confidence: number,
          * displayOKR: boolean,
          * related: number,
+         * notes: string,
          * risk: number,
          * rollupRisk: number,
          * numChildKRs: number,
@@ -161,7 +162,7 @@ export const useDataStore = defineStore({
             const okrsListId = process.env.VUE_APP_SP_LIST_OKRS_ID;
             let resp = await graph.getList(
                 okrsListId,
-                "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_",
+                "id,Title,Category,_x0023_,OKR_x002d_ID,ORKType,OwnerLookupId,CoOwnersLookupId,Period0LookupId,TeamLookupId,Team,Period0,Owner,Co_x002d_Owners,Tags,Reference,ReferenceLookupId,Progress_x0025_,Confidence_x0020__x0025_,Notes",
                 `fields/Period0LookupId eq '${appStore.selectedPeriodID}'`
             );
 
@@ -186,6 +187,7 @@ export const useDataStore = defineStore({
                 o.referenceId = okr.ReferenceLookupId;
                 o.progress = okr.Progress_x0025_;
                 o.confidence = okr.Confidence_x0020__x0025_;
+                o.notes = okr.Notes;
                 //
                 o.displayOKR = true;
                 o.related = null;

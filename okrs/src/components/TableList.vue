@@ -47,9 +47,11 @@
         <v-col
           cols="1"
           class="text-right"
-          style="flex: 0 0 100px; max-width: 100px"
-          ><span v-if="settings.includes('show-progress')" style="color:#7d7d7d;font-size: .9em;">{{ displayProgress(okr) }}</span>&nbsp;
-          <v-tooltip left>
+          style="flex: 0 0 130px; max-width: 130px"
+          >
+          
+          <span v-if="settings.includes('show-progress')" style="color:#7d7d7d;font-size: .9em;">{{ displayProgress(okr) }}</span>&nbsp;
+          <v-tooltip left color="#0e406a" open-delay="150">
             <template v-slot:activator="{ on, attrs }">
               <v-icon
                 dense
@@ -64,7 +66,7 @@
                   Progress&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ okr["progress"] ?  Math.round(okr["progress"] * 100) : 0 }}%<br />
                   Confidence&nbsp;: {{ okr["confidence"] ?  Math.round(okr["confidence"] * 100) : 0 }}% </span>
           </v-tooltip>&nbsp;
-          <v-tooltip left>
+          <v-tooltip left color="#0e406a" open-delay="150">
             <template v-slot:activator="{ on, attrs }">
               <v-icon
                 dense
@@ -75,10 +77,24 @@
                 {{ displayRollupRiskIcon(okr) }}
               </v-icon>
             </template>
-            <span
+            <span v-if='okr["rollupRisk"]'
               >Rollup Risk Score&nbsp;&nbsp;&nbsp;: {{ okr["rollupRisk"] }}<br />Children Total/KRs :
               {{ okr["supOKRs"] ? okr["supOKRs"].length : "" }}&nbsp;/&nbsp;{{ okr["numChildKRs"] }}
             </span>
+          </v-tooltip>&nbsp;
+          <v-tooltip left color="#0e406a" min-width="300px" open-delay="150">
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                dense
+                v-bind="attrs"
+                v-on="on"
+                color="#8cc2f0"
+              >{{ displayInfoIcon(okr)}}</v-icon>
+            </template>
+            <div>ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ okr["id"] }}</div>
+            <div v-if="okr['owner']">Owner &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ okr["owner"] }}</div>
+            <div v-if="okr['coOwners']">CoOwners : {{ getCoOwners(okr) }}</div>
+            <div v-if="okr['notes']"><hr style="background-color:#186eb6; height:1px; border:none;" />Notes :<br /> <span v-html="getNotes(okr)" /></div>
           </v-tooltip>
         </v-col>
       </v-row>
@@ -263,10 +279,33 @@ export default {
         return riskDisplayIconColor;
       }
     },
+    displayInfoIcon: function (okr) {
+      if (okr.notes == null) {
+        return "mdi-magnify";
+      } else {
+        return "mdi-magnify-plus-outline";
+      }
+    },
     toggleTeam: function (team) {
       if (!global.App.selectedOKR) {
         team.displayOKRs = !team.displayOKRs;
         global.App.scrollToTeam(team["id"]);
+      }
+    },
+    getCoOwners: function (okr) {
+      if (okr.coOwners) {
+        if (okr.coOwners.length > 1) {
+          return okr.coOwners.map((co) => co["LookupValue"]).join(
+            ", "
+          );
+        } else {
+          return okr.coOwners[0]["LookupValue"];
+        }
+      }
+    },
+    getNotes: function (okr) {
+      if (okr.notes) {
+          return String(okr.notes).replace(/\n/g, "<br />");
       }
     },
   },
