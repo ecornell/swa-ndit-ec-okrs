@@ -48,7 +48,7 @@
           cols="1"
           class="text-right"
           style="flex: 0 0 100px; max-width: 100px"
-          ><span style="color:#7d7d7d;font-size: .9em;">{{ displayProgress(okr) }}</span>&nbsp;
+          ><span v-if="settings.includes('show-progress')" style="color:#7d7d7d;font-size: .9em;">{{ displayProgress(okr) }}</span>&nbsp;
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
@@ -60,7 +60,9 @@
                 {{ displayRiskIcon(okr) }}
               </v-icon>
             </template>
-            <span>Risk Score: {{ okr["risk"] }} </span>
+            <span>Risk Score&nbsp;&nbsp;: {{ okr["risk"] }}<br />
+                  Progress&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ okr["progress"] ?  Math.round(okr["progress"] * 100) : 0 }}%<br />
+                  Confidence&nbsp;: {{ okr["confidence"] ?  Math.round(okr["confidence"] * 100) : 0 }}% </span>
           </v-tooltip>&nbsp;
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
@@ -74,7 +76,7 @@
               </v-icon>
             </template>
             <span
-              >Rollup Risk Score: {{ okr["rollupRisk"] }}<br />Children Total/KRs:
+              >Rollup Risk Score&nbsp;&nbsp;&nbsp;: {{ okr["rollupRisk"] }}<br />Children Total/KRs :
               {{ okr["supOKRs"] ? okr["supOKRs"].length : "" }}&nbsp;/&nbsp;{{ okr["numChildKRs"] }}
             </span>
           </v-tooltip>

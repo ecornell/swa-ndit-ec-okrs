@@ -27,13 +27,25 @@
               <v-list-item-action>
                 <v-checkbox :input-value="active" color="primary"></v-checkbox>
               </v-list-item-action>
-
               <v-list-item-content>
                 <v-list-item-title>ID</v-list-item-title>
                 <v-list-item-subtitle>Show OKR ID</v-list-item-subtitle>
               </v-list-item-content>
             </template>
           </v-list-item>
+
+          <v-list-item value="show-progress" dense>
+            <template v-slot:default="{ active }">
+              <v-list-item-action>
+                <v-checkbox :input-value="active" color="primary"></v-checkbox>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>Progress</v-list-item-title>
+                <v-list-item-subtitle>Show Progress %</v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-list-item>
+
         </v-list-item-group>
       </v-list>
 
