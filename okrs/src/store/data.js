@@ -51,6 +51,7 @@ export const useDataStore = defineStore({
          * related: number,
          * risk: number,
          * rollupRisk: number,
+         * numChildKRs: number,
          * supOKRs: [],
          * }[]} */
         okrs: [],
@@ -339,11 +340,14 @@ export const useDataStore = defineStore({
                 );
                 if (x && x.length > 0) {
                     x.forEach((io) => {
-                        supOKRsX = supOKRsX.concat([{
-                            okr: io,
-                            depth: depth
-                        }]);
-                        io.related = depth;
+                        let exists = supOKRsX.some((s) => s.okr.id == io.id)
+                        if (!exists) {
+                            supOKRsX = supOKRsX.concat([{
+                                okr: io,
+                                depth: depth
+                            }]);
+                            io.related = depth;
+                        }
                     });
                     let children = this.findSupOKRsX(x, depth + 1);
                     if (children && children.length > 0) {
@@ -396,10 +400,16 @@ export const useDataStore = defineStore({
 
                 let totalRisk = 0;
                 if (supOKRs && supOKRs.length > 0) {
+                    let numChildKRs = 0;
                     supOKRs.forEach(o => {
-                        totalRisk += o.okr.risk ? o.okr.risk : 0;
+                        if (o.okr.category == "KR") {
+                            totalRisk += o.okr.risk ? o.okr.risk : 0;
+                            numChildKRs = numChildKRs + 1;
+                        }
                     });
-                    okr.rollupRisk = Math.round(totalRisk / supOKRs.length);
+                    okr.numChildKRs = numChildKRs;
+                    okr.rollupRisk = Math.round(totalRisk / numChildKRs);
+                    
                 }
                 okr.related = null; // reset related flag
             });

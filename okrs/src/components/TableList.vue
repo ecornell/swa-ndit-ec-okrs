@@ -48,7 +48,7 @@
           cols="1"
           class="text-right"
           style="flex: 0 0 100px; max-width: 100px"
-          >{{ displayProgress(okr) }}
+          ><span style="color:#7d7d7d;font-size: .9em;">{{ displayProgress(okr) }}</span>&nbsp;
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
@@ -61,7 +61,7 @@
               </v-icon>
             </template>
             <span>Risk Score: {{ okr["risk"] }} </span>
-          </v-tooltip>
+          </v-tooltip>&nbsp;
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
@@ -74,8 +74,8 @@
               </v-icon>
             </template>
             <span
-              >Rollup Risk Score: {{ okr["rollupRisk"] }}<br /># Child Records:
-              {{ okr["supOKRs"] ? okr["supOKRs"].length : "" }}
+              >Rollup Risk Score: {{ okr["rollupRisk"] }}<br />Children Total/KRs:
+              {{ okr["supOKRs"] ? okr["supOKRs"].length : "" }}&nbsp;/&nbsp;{{ okr["numChildKRs"] }}
             </span>
           </v-tooltip>
         </v-col>
@@ -178,8 +178,10 @@ export default {
       if (okr.progress == null) {
         return "";
       } else {
-        let progress = okr.progress * 100;
-        return progress.toFixed(0) + "%";
+        if (okr.category == "KR") {
+          let progress = okr.progress * 100;
+          return progress.toFixed(0) + "%";
+        }
       }
     },
 
@@ -189,9 +191,9 @@ export default {
         return riskDisplayIcon;
       } else {
         let risk = okr.risk;
-        if (risk < 25) {
+        if (risk < 33) {
           riskDisplayIcon = "mdi-check-circle-outline";
-        } else if (risk < 50) {
+        } else if (risk < 66) {
           riskDisplayIcon = "mdi-alert-outline";
         } else {
           riskDisplayIcon = "mdi-alert-octagon-outline";
@@ -205,9 +207,9 @@ export default {
         return riskDisplayIconColor;
       } else {
         let risk = okr.risk;
-        if (risk < 25) {
+        if (risk < 33) {
           riskDisplayIconColor = "#6abe26";
-        } else if (risk < 50) {
+        } else if (risk < 66) {
           riskDisplayIconColor = "#ffb017";
         } else {
           riskDisplayIconColor = "#ff1717";
@@ -221,12 +223,24 @@ export default {
         return riskDisplayIcon;
       } else {
         let risk = okr.rollupRisk;
-        if (risk < 25) {
-          riskDisplayIcon = "mdi-chevron-down-box";
+        if (risk < 10) {
+          riskDisplayIcon = "mdi-circle-outline";
+        } else if (risk < 20) {
+          riskDisplayIcon = "mdi-circle-slice-1";
+        } else if (risk < 30) {
+          riskDisplayIcon = "mdi-circle-slice-2";
+        } else if (risk < 40) {
+          riskDisplayIcon = "mdi-circle-slice-3";
         } else if (risk < 50) {
-          riskDisplayIcon = "mdi-chevron-down-box";
+          riskDisplayIcon = "mdi-circle-slice-4";
+        } else if (risk < 60) {
+          riskDisplayIcon = "mdi-circle-slice-5";
+        } else if (risk < 70) {
+          riskDisplayIcon = "mdi-circle-slice-6";
+        } else if (risk < 80) {
+          riskDisplayIcon = "mdi-circle-slice-7";
         } else {
-          riskDisplayIcon = "mdi-chevron-down-box";
+          riskDisplayIcon = "mdi-circle-slice-8";
         }
         return riskDisplayIcon;
       }
@@ -237,9 +251,9 @@ export default {
         return riskDisplayIconColor;
       } else {
         let risk = okr.rollupRisk;
-        if (risk < 25) {
+        if (risk < 33) {
           riskDisplayIconColor = "#6abe26";
-        } else if (risk < 50) {
+        } else if (risk < 66) {
           riskDisplayIconColor = "#ffb017";
         } else {
           riskDisplayIconColor = "#ff1717";
