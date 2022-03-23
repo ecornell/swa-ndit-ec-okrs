@@ -385,19 +385,22 @@ export default {
 }
 
 .table-okr-cat-obj {
-  font-weight: 500;
+  font-weight: 300;
+  color: #7d7d7d;
 }
 .table-okr-cat-kr {
   font-weight: 300;
   margin: 0 0 0 20px;
+  color: #7d7d7d;
 }
 
 .table-okr-title-obj {
   font-weight: 500;
 }
 .table-okr-title-kr {
-  font-weight: 300;
+  font-weight: 400;
   margin: 0 0 0 20px;
+  color: #6e6d6d;
 }
 .table-okr-row:hover {
   background-color: #fffec3;
