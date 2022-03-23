@@ -44,7 +44,12 @@
           >{{ okr["category"] }} {{ okr["okrNumber"] }}</v-col
         >
         <v-col cols="" :class="classTitle(okr)">
-          <v-tooltip left color="#0e406a" open-delay="150" v-if="okr['tags'] && okr['tags'].includes('Executive-Focus')">
+          <v-tooltip
+            left
+            color="#0e406a"
+            open-delay="150"
+            v-if="okr['tags'] && okr['tags'].includes('Executive-Focus')"
+          >
             <template v-slot:activator="{ on, attrs }">
               <v-icon
                 dense
@@ -242,22 +247,25 @@ export default {
         }
       }
     },
-
     displayRiskIcon: function (okr) {
       let riskDisplayIcon = "";
-      if (okr.risk == null) {
-        return riskDisplayIcon;
+      if (okr.progress == null && okr.category == "KR") {
+        riskDisplayIcon = "mdi-minus";
       } else {
-        let risk = okr.risk;
-        if (risk < 33) {
-          riskDisplayIcon = "mdi-check-circle-outline";
-        } else if (risk < 66) {
-          riskDisplayIcon = "mdi-alert-outline";
+        if (okr.risk == null) {
+          return riskDisplayIcon;
         } else {
-          riskDisplayIcon = "mdi-alert-octagon-outline";
+          let risk = okr.risk;
+          if (risk < 33) {
+            riskDisplayIcon = "mdi-check-circle-outline";
+          } else if (risk < 66) {
+            riskDisplayIcon = "mdi-alert-outline";
+          } else {
+            riskDisplayIcon = "mdi-alert-octagon-outline";
+          }          
         }
-        return riskDisplayIcon;
       }
+      return riskDisplayIcon;
     },
     displayRiskIconColor: function (okr) {
       let riskDisplayIconColor = "blue";
