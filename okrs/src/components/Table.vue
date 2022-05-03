@@ -16,28 +16,29 @@
           >Risk</v-col
         >
       </v-row>
-      <TableList
+      <OkrTableList
         v-for="team in heirarchyTeams"
         v-bind:team="team"
         v-bind:okrs="okrs"
         v-bind:settings="settings"
         v-bind:key="team.id"
         :depth="1"
-      ></TableList>
+      ></OkrTableList>
     </div>
   </v-container>
 </template>
 
 <script>
-import TableList from "./TableList";
+import OkrTableList from "./TableList";
 import { mapStores, mapState } from "pinia";
 import { useDataStore } from "../store/data";
 
 export default {
+  name: "OkrTable",
   props: ["okrs", "settings"],
 
   components: {
-    TableList,
+    OkrTableList,
   },
 
   computed: {

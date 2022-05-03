@@ -107,7 +107,7 @@
 
 <script>
 export default {
-  name: "Details",
+  name: "OkrDetails",
 
   props: ["selectedOKR"],
 

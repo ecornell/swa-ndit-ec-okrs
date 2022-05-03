@@ -144,27 +144,27 @@
         </v-col>
       </v-row>
     </div>
-    <TableList
+    <OkrTableList
       v-for="t in team.children"
       :team="t"
       :okrs="okrs"
       :settings="settings"
       :key="t['id']"
       :depth="depth + 1"
-    ></TableList>
+    ></OkrTableList>
   </div>
 </template>
 
 <script>
-import TableList from "./TableList";
+import OkrTableList from "./TableList";
 import { mapStores } from "pinia";
 import { useAppStore } from "../store/app";
 
 export default {
-  name: "TableList",
+  name: "OkrTableList",
   props: ["team", "okrs", "settings", "depth"],
   components: {
-    TableList,
+    OkrTableList,
   },
   computed: {
     ...mapStores(useAppStore),
