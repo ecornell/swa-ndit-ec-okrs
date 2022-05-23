@@ -169,9 +169,9 @@
         <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
-        <v-overlay :value="!dataStore.loaded">
+        <!-- <v-overlay :value="!dataStore.loaded">
           <v-progress-circular indeterminate size="64"></v-progress-circular>
-        </v-overlay>
+        </v-overlay> -->
         <Table :okrs="dataStore.okrs" :settings="appStore.settings" />
         <Details
           :selectedOKR="appStore.selectedOKR"
