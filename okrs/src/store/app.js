@@ -23,6 +23,27 @@ export const useAppStore = defineStore({
         }
     },
     actions: {
+        loadState() {
+            // load cached data
+            if (localStorage.getItem('selectedPeriodID')) {
+                try {
+                    console.log('loading selectedPeriodID from local storage');
+                    this.selectedPeriodID = JSON.parse(localStorage.getItem('selectedPeriodID'));
+                    console.log(`loaded selectedPeriodID from local storage - ${this.selectedPeriodID}`);
+                } catch(e) {
+                    localStorage.removeItem('selectedPeriodID');
+                }    
+            }
+            if (localStorage.getItem('selectedPeriod')) {
+                try {
+                    console.log('loading selectedPeriod from local storage');
+                    this.selectedPeriod = JSON.parse(localStorage.getItem('selectedPeriod'));
+                    console.log(`loaded selectedPeriod from local storage - ${this.selectedPeriod}`);
+                } catch(e) {
+                    localStorage.removeItem('selectedPeriod');
+                }    
+            }
+        },
 
         /**
          * @param {number} _id - Selected OKR ID

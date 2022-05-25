@@ -45,7 +45,6 @@
               </v-list-item-content>
             </template>
           </v-list-item>
-
         </v-list-item-group>
       </v-list>
 
@@ -55,7 +54,7 @@
             Logout
           </v-btn>
 
-          <div class="text-center" style="color: grey; font-size:.7em;">
+          <div class="text-center" style="color: grey; font-size: 0.7em">
             build:
             <a
               :href="`https://github.com/ndgov/swa-ndit-ec-okrs/commits/master`"
@@ -169,14 +168,14 @@
         <Login v-if="!userStore.name && !error" />
       </template>
       <template v-else>
-        <!-- <v-overlay :value="!dataStore.loaded">
-          <v-progress-circular indeterminate size="64"></v-progress-circular>
-        </v-overlay> -->
         <Table :okrs="dataStore.okrs" :settings="appStore.settings" />
         <Details
           :selectedOKR="appStore.selectedOKR"
           :detailsVisible="detailsVisible"
         />
+        <!-- <v-overlay :value="!dataStore.loaded">
+          <v-progress-circular indeterminate size="64"></v-progress-circular>
+        </v-overlay> -->
       </template>
     </v-main>
   </v-app>
@@ -210,9 +209,9 @@ export default {
   created() {
     window.addEventListener("scroll", this.handleScroll);
     this.userStore.login();
-    if (this.userStore.name) {
-      this.dataStore.loadData();
-    }
+    //
+    this.appStore.loadState();
+    this.appStore.resetSelected();
   },
 
   destroyed() {
@@ -250,10 +249,10 @@ export default {
     },
     updateSelectedTeam(newValue) {
       global.appInsights.trackEvent({
-        name: "updateSelectedTeam", 
+        name: "updateSelectedTeam",
         properties: {
-          team: this.dataStore.teams.find(t => t.id === newValue).title
-        }
+          team: this.dataStore.teams.find((t) => t.id === newValue).title,
+        },
       });
 
       this.dataStore.showAll();
@@ -261,16 +260,28 @@ export default {
     },
     updateSelectedPeriod(newValue) {
       global.appInsights.trackEvent({
-        name: "updateSelectedPeriod", 
+        name: "updateSelectedPeriod",
         properties: {
-          period: this.dataStore.periods.find(p => p.id === newValue).title
-        }
+          period: this.dataStore.periods.find((p) => p.id === newValue).title,
+        },
       });
 
-      this.appStore.selectedPeriod = this.dataStore.periods.find(p => p.id === newValue);
+      this.appStore.resetSelected();
+      this.appStore.selectedPeriod = this.dataStore.periods.find(
+        (p) => p.id === newValue
+      );
       this.dataStore.reloadOKRs();
       this.dataStore.showAll();
       this.scrollToTeam(1);
+
+      localStorage.setItem(
+        "selectedPeriod",
+        JSON.stringify(this.appStore.selectedPeriod)
+      );
+      localStorage.setItem(
+        "selectedPeriodID",
+        JSON.stringify(this.appStore.selectedPeriodID)
+      );
     },
     handleScroll() {
       if (this.windowPosition != window.pageYOffset) {
@@ -313,14 +324,13 @@ export default {
       }
     },
     selectedOKR: function (newValue) {
-      global.appInsights.trackEvent({
-        name: "selectedOKR", 
-        properties: {
-          okrId: `${newValue.id}-${newValue.okrId}`,
-        }
-      });
-
       if (newValue) {
+        global.appInsights.trackEvent({
+          name: "selectedOKR",
+          properties: {
+            okrId: `${newValue.id}-${newValue.okrId}`,
+          },
+        });
         this.scrollToTeam(newValue.teamId);
       }
     },

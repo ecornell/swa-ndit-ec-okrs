@@ -66,6 +66,43 @@ export const useDataStore = defineStore({
     actions: {
 
         async loadData() {
+            // load cached data
+            if (localStorage.getItem('teams')) {
+                try {
+                    console.log('loading teams from local storage');
+                    this.teams = JSON.parse(localStorage.getItem('teams'));
+                    console.log(`loading teams from local storage - ${this.teams.length}`);
+                } catch(e) {
+                    localStorage.removeItem('teams');
+                }    
+            }
+            if (localStorage.getItem('periods')) {
+                try {
+                    console.log('loading teams from local storage');
+                    this.periods = JSON.parse(localStorage.getItem('periods'));
+                    console.log(`loading periods from local storage - ${this.periods.length}`);
+                } catch(e) {
+                    localStorage.removeItem('periods');
+                }    
+            }
+            if (localStorage.getItem('okrs')) {
+                try {
+                    console.log('loading okrs from local storage');
+                    this.okrs = JSON.parse(localStorage.getItem('okrs'));
+                    console.log(`loading okrs from local storage - ${this.okrs.length}`);
+                } catch(e) {
+                    localStorage.removeItem('okrs');
+                }    
+            }
+
+            //
+
+            if (this.okrs.length === 0) {
+                this.refreshData();
+            }
+        },
+
+        async refreshData() {         
             this.loaded = false;
             await this.loadTeams();
             await this.loadPeriods();
@@ -75,6 +112,7 @@ export const useDataStore = defineStore({
 
         async reloadOKRs() {
             this.loaded = false;
+            this.okrs = [];
             await this.loadOKRs();
             this.loaded = true;
         },
@@ -114,6 +152,8 @@ export const useDataStore = defineStore({
                 return 0;
             });
 
+            localStorage.setItem('teams', JSON.stringify(this.teams));
+
         },
 
         async loadPeriods() {
@@ -152,10 +192,13 @@ export const useDataStore = defineStore({
                 return p;
             });
 
+            localStorage.setItem('periods', JSON.stringify(this.periods));
 
         },
 
         async loadOKRs() {
+
+            console.log(`loading okrs`);
 
             const appStore = useAppStore();
 
@@ -199,6 +242,13 @@ export const useDataStore = defineStore({
             this.okrs.sort((a, b) => {
                 return a.okrId - b.okrId;
             });
+
+            this.okrs.forEach((okr) => {
+                okr.related = null;
+            });
+
+            console.log(`Saving orks to local storage - ${this.okrs.length}`);
+            localStorage.setItem('okrs', JSON.stringify(this.okrs));
 
         },
 
@@ -351,9 +401,13 @@ export const useDataStore = defineStore({
                             io.related = depth;
                         }
                     });
-                    let children = this.findSupOKRsX(x, depth + 1);
-                    if (children && children.length > 0) {
-                        supOKRsX = supOKRsX.concat(children);
+                    if (depth < 10) {
+                        let children = this.findSupOKRsX(x, depth + 1);
+                        if (children && children.length > 0) {
+                            supOKRsX = supOKRsX.concat(children);
+                        }
+                    }else {
+                        console.warn(`depth limit reached - possible loop - ${list[0].id} - ${depth} - ${x.id}`);
                     }
                 }
             });
@@ -383,6 +437,8 @@ export const useDataStore = defineStore({
         },
 
         calculateRisk() {
+            console.log("calculateRisk");
+
             const appStore = useAppStore();
             let periodPercentComplete = appStore.selectedPeriod.percentComplete
             this.okrs.forEach(okr => {
@@ -396,9 +452,16 @@ export const useDataStore = defineStore({
                 }
             });
 
+            console.log("calculateRisk - s2");
+
             this.okrs.forEach(okr => {
+
+                console.log(`calculateRisk - s2 - ${okr.id}`);
+
                 let supOKRs = this.findSupOKRsX([okr]);
                 okr.supOKRs = supOKRs;
+
+                console.log(`calculateRisk - s3 - ${okr.id}`);
 
                 let totalRisk = 0;
                 if (supOKRs && supOKRs.length > 0) {
