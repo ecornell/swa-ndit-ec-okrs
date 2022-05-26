@@ -12,7 +12,7 @@ export const useAppStore = defineStore({
         selectedTeam: null,
         selectedPeriodID: "1",
         selectedPeriod: null,
-        settings: ["filter-related"],
+        settings: ["filter-related", "show-progress"],
     }),
     getters: {
         isFilterRelated: state => {
