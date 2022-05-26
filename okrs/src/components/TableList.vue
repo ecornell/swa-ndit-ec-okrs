@@ -41,8 +41,25 @@
           okr["id"]
         }}</v-col>
         <v-col cols="1" :class="classCategory(okr)"
-          >{{ okr["category"] }} {{ okr["okrNumber"] }}</v-col
-        >
+          ><v-tooltip right color="#0e406a" open-delay="150">
+            <template v-slot:activator="{ on, attrs }">
+              <span
+                v-bind="attrs"
+                v-on="on"
+                style="color: rgb(0 0 0 / 69%); font-size: 0.8em"
+              >
+                {{ okr["okrType"] === "Aspirational" ? "🚀" : "🎯" }}
+              </span>
+            </template>
+            <span
+              >{{
+                okr["okrType"] === "Aspirational" ? "Aspirational" : "Commited"
+              }}
+            </span>
+          </v-tooltip>
+
+          {{ okr["category"] }} {{ okr["okrNumber"] }}
+        </v-col>
         <v-col cols="" :class="classTitle(okr)">
           <v-tooltip
             left
@@ -56,7 +73,7 @@
                 v-bind="attrs"
                 v-on="on"
                 color="#e8d545"
-                style="margin: -4px -4px 0 0;"
+                style="margin: -4px -4px 0 0"
                 >mdi-star
               </v-icon>
               &nbsp;
@@ -262,7 +279,7 @@ export default {
             riskDisplayIcon = "mdi-alert-outline";
           } else {
             riskDisplayIcon = "mdi-alert-octagon-outline";
-          }          
+          }
         }
       }
       return riskDisplayIcon;
