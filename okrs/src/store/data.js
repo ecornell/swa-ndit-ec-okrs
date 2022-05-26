@@ -115,7 +115,7 @@ export const useDataStore = defineStore({
             await this.loadPeriods();
 
             const appStore = useAppStore();
-            if (!appStore.selectedPeriodID) {
+            if (!appStore.selectedPeriod) {
                 const appStore = useAppStore();
                 let currentPeriod = this.periods.find(p => p.current === true);
                 appStore.selectedPeriodID = currentPeriod.id;

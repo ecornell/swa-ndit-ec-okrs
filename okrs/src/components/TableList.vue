@@ -41,7 +41,7 @@
           okr["id"]
         }}</v-col>
         <v-col cols="1" :class="classCategory(okr)"
-         style="flex: 0 0 105px; max-width: 105px"
+         style="flex: 0 0 75px; max-width: 75px"
           ><v-tooltip right color="#0e406a" open-delay="150">
             <template v-slot:activator="{ on, attrs }">
               <span
