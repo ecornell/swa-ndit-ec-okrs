@@ -177,6 +177,9 @@
           <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay> -->
       </template>
+      <v-snackbar v-model="snackbar">
+        {{ snackbarText }}
+      </v-snackbar>
     </v-main>
   </v-app>
 </template>
@@ -225,6 +228,8 @@ export default {
     windowPosition: 0,
     fabDisplayOptions: false,
     error: "",
+    snackbar: false,
+    snackbarText: "",
   }),
 
   mounted() {
@@ -283,6 +288,10 @@ export default {
         JSON.stringify(this.appStore.selectedPeriodID)
       );
     },
+    updateSnackar(text) {
+      this.snackbarText = text;
+      this.snackbar = true;
+    },
     handleScroll() {
       if (this.windowPosition != window.pageYOffset) {
         this.appStore.selectedTeam = null;
@@ -333,7 +342,7 @@ export default {
         });
         this.scrollToTeam(newValue.teamId);
       }
-    },
+    },    
   },
 };
 </script>

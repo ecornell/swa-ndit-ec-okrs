@@ -71,46 +71,64 @@ export const useDataStore = defineStore({
                 try {
                     console.log('loading teams from local storage');
                     this.teams = JSON.parse(localStorage.getItem('teams'));
-                    console.log(`loading teams from local storage - ${this.teams.length}`);
-                } catch(e) {
+                    console.log(`loaded teams from local storage - ${this.teams.length}`);
+                } catch (e) {
                     localStorage.removeItem('teams');
-                }    
+                }
             }
             if (localStorage.getItem('periods')) {
                 try {
                     console.log('loading teams from local storage');
                     this.periods = JSON.parse(localStorage.getItem('periods'));
-                    console.log(`loading periods from local storage - ${this.periods.length}`);
-                } catch(e) {
+                    console.log(`loaded periods from local storage - ${this.periods.length}`);
+                } catch (e) {
                     localStorage.removeItem('periods');
-                }    
+                }
             }
             if (localStorage.getItem('okrs')) {
                 try {
                     console.log('loading okrs from local storage');
                     this.okrs = JSON.parse(localStorage.getItem('okrs'));
-                    console.log(`loading okrs from local storage - ${this.okrs.length}`);
-                } catch(e) {
+                    console.log(`loaded okrs from local storage - ${this.okrs.length}`);
+                } catch (e) {
                     localStorage.removeItem('okrs');
-                }    
+                }
             }
 
             //
 
             if (this.okrs.length === 0) {
                 this.refreshData();
+            } else {
+                setTimeout(() => {
+                    global.App.updateSnackar("Refreshing data...");
+                    this.refreshData();
+                }, 5000);
             }
         },
 
-        async refreshData() {         
+        async refreshData() {
+            console.log('refreshing data');
+
             this.loaded = false;
             await this.loadTeams();
             await this.loadPeriods();
+
+            const appStore = useAppStore();
+            if (!appStore.selectedPeriodID) {
+                const appStore = useAppStore();
+                let currentPeriod = this.periods.find(p => p.current === true);
+                appStore.selectedPeriodID = currentPeriod.id;
+                appStore.selectedPeriod = currentPeriod;
+            }
+
             await this.loadOKRs();
             this.loaded = true;
         },
 
         async reloadOKRs() {
+
+
             this.loaded = false;
             this.okrs = [];
             await this.loadOKRs();
@@ -118,6 +136,8 @@ export const useDataStore = defineStore({
         },
 
         async loadTeams() {
+
+            global.App.updateSnackar("Refreshing data ... Teams");
 
             const teamsListId = process.env.VUE_APP_SP_LIST_TEAMS_ID;
             let resp = await graph.getList(
@@ -158,7 +178,9 @@ export const useDataStore = defineStore({
 
         async loadPeriods() {
 
-            const appStore = useAppStore();
+            global.App.updateSnackar("Refreshing data ... Periods");
+
+            //const appStore = useAppStore();
 
             const periodsListId = process.env.VUE_APP_SP_LIST_PERIODS_ID;
             let resp = await graph.getList(
@@ -186,8 +208,8 @@ export const useDataStore = defineStore({
                     p.current = false;
                 } else {
                     p.current = true;
-                    appStore.selectedPeriodID = p.id;
-                    appStore.selectedPeriod = p;
+                    // appStore.selectedPeriodID = p.id;
+                    // appStore.selectedPeriod = p;
                 }
                 return p;
             });
@@ -197,6 +219,8 @@ export const useDataStore = defineStore({
         },
 
         async loadOKRs() {
+
+            global.App.updateSnackar("Refreshing data ... OKRs ... Fetching from SharePoint");
 
             console.log(`loading okrs`);
 
@@ -209,7 +233,7 @@ export const useDataStore = defineStore({
                 `fields/Period0LookupId eq '${appStore.selectedPeriodID}'`
             );
 
-            this.okrs = resp.map(okr => {
+            let tempOkrs = resp.map(okr => {
                 let o = {}
                 o.id = parseInt(okr.id);
                 o.title = okr.Title;
@@ -237,15 +261,19 @@ export const useDataStore = defineStore({
                 return o;
             });
 
-            this.calculateRisk();
+            global.App.updateSnackar("Refreshing data ... OKRs ... Calculating Progress");
 
-            this.okrs.sort((a, b) => {
+            tempOkrs = this.calculateRisk(tempOkrs);
+
+            tempOkrs.sort((a, b) => {
                 return a.okrId - b.okrId;
             });
 
-            this.okrs.forEach((okr) => {
+            tempOkrs.forEach((okr) => {
                 okr.related = null;
             });
+
+            this.okrs = tempOkrs;
 
             console.log(`Saving orks to local storage - ${this.okrs.length}`);
             localStorage.setItem('okrs', JSON.stringify(this.okrs));
@@ -256,8 +284,8 @@ export const useDataStore = defineStore({
 
         updateRelated(selectedOKR) {
 
-            this.refOKRsX = this.findRefOKRsX([selectedOKR]);
-            this.supOKRsX = this.findSupOKRsX([selectedOKR]);
+            this.refOKRsX = this.findRefOKRsX(this.okrs, [selectedOKR]);
+            this.supOKRsX = this.findSupOKRsX(this.okrs, [selectedOKR]);
 
             // Identify the teams that are related to this OKR
             this.relatedTeams = [];
@@ -362,13 +390,20 @@ export const useDataStore = defineStore({
                 this.relatedTeams.push(tId);
             }
         },
-        findSupOKRsX(list, depth = 1) {
+        /**
+         * 
+         * @param {*} tempOkrs 
+         * @param {*} list 
+         * @param {*} depth - Depth of recursion - Default is 1
+         * @returns supOKRsX[] - List of suppoorting OKRs
+         */
+        findSupOKRsX(tempOkrs, list, depth = 1) {
             let supOKRsX = [];
             // If selected OKR is an Objective, find related child KRs
             if (depth == 1) {
                 let okr = list[0];
                 if (okr.category == "Obj") {
-                    let childKRs = this.okrs.filter(
+                    let childKRs = tempOkrs.filter(
                         (o) =>
                         o.teamId == okr.teamId &&
                         o.okrNumber.toString().startsWith(okr.okrNumber + ".")
@@ -385,7 +420,7 @@ export const useDataStore = defineStore({
                 }
             }
             list.forEach((o) => {
-                let x = this.okrs.filter(
+                let x = tempOkrs.filter(
                     ({
                         referenceId
                     }) => referenceId == o.id
@@ -402,21 +437,22 @@ export const useDataStore = defineStore({
                         }
                     });
                     if (depth < 10) {
-                        let children = this.findSupOKRsX(x, depth + 1);
+                        let children = this.findSupOKRsX(tempOkrs, x, depth + 1);
                         if (children && children.length > 0) {
                             supOKRsX = supOKRsX.concat(children);
                         }
-                    }else {
+                    } else {
                         console.warn(`depth limit reached - possible loop - ${list[0].id} - ${depth} - ${x.id}`);
                     }
                 }
             });
             return supOKRsX;
         },
-        findRefOKRsX(list, depth = 1) {
+
+        findRefOKRsX(tempOkrs, list, depth = 1) {
             let refOKRsX = [];
             list.forEach((o) => {
-                let x = this.okrs.filter(({
+                let x = tempOkrs.filter(({
                     id
                 }) => id == o.referenceId);
                 if (x && x.length > 0) {
@@ -427,7 +463,7 @@ export const useDataStore = defineStore({
                         });
                         io.related = -depth;
                     });
-                    let parent = this.findRefOKRsX(x, depth + 1);
+                    let parent = this.findRefOKRsX(tempOkrs, x, depth + 1);
                     if (parent && parent.length > 0) {
                         refOKRsX = refOKRsX.concat(parent);
                     }
@@ -436,12 +472,12 @@ export const useDataStore = defineStore({
             return refOKRsX;
         },
 
-        calculateRisk() {
-            console.log("calculateRisk");
+        calculateRisk(tempOkrs) {
 
             const appStore = useAppStore();
             let periodPercentComplete = appStore.selectedPeriod.percentComplete
-            this.okrs.forEach(okr => {
+
+            tempOkrs.forEach(okr => {
                 if (okr.category == "KR") {
                     let progress = okr.progress ? okr.progress : 0;
                     let progressDiff = parseInt(periodPercentComplete - (progress * 100));
@@ -452,16 +488,10 @@ export const useDataStore = defineStore({
                 }
             });
 
-            console.log("calculateRisk - s2");
+            tempOkrs.forEach(okr => {
 
-            this.okrs.forEach(okr => {
-
-                console.log(`calculateRisk - s2 - ${okr.id}`);
-
-                let supOKRs = this.findSupOKRsX([okr]);
+                let supOKRs = this.findSupOKRsX(tempOkrs, [okr]);
                 okr.supOKRs = supOKRs;
-
-                console.log(`calculateRisk - s3 - ${okr.id}`);
 
                 let totalRisk = 0;
                 if (supOKRs && supOKRs.length > 0) {
@@ -474,10 +504,12 @@ export const useDataStore = defineStore({
                     });
                     okr.numChildKRs = numChildKRs;
                     okr.rollupRisk = Math.round(totalRisk / numChildKRs);
-                    
+
                 }
                 okr.related = null; // reset related flag
             });
+
+            return tempOkrs;
 
         }
     }
