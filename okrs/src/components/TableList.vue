@@ -46,13 +46,13 @@
             <template v-slot:activator="{ on, attrs }">
               <span
                 v-bind="attrs"
-                v-on="on"
-                style="color: rgb(0 0 0 / 69%); font-size: 0.8em"
+                v-on="on"                
+                class="okr-type-icon"
               >
                 {{ okr["okrType"] === "Aspirational" ? "🚀" : "🎯" }}
               </span>
             </template>
-            <span
+            <span 
               >{{
                 okr["okrType"] === "Aspirational" ? "Aspirational" : "Commited"
               }}
@@ -379,6 +379,13 @@ export default {
 <style scoped>
 .okr-hidden {
   display: none !important;
+}
+.okr-type-icon {
+  color: rgb(0 0 0 / 60%);
+  font-size: 0.75em;
+  position: relative;
+  top: -1px;
+  margin-right: 4px;
 }
 .table-okr-row {
   padding: 0 4px 0 0;
