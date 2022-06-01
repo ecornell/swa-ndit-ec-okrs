@@ -497,13 +497,13 @@ export const useDataStore = defineStore({
                 if (supOKRs && supOKRs.length > 0) {
                     let numChildKRs = 0;
                     supOKRs.forEach(o => {
+                        totalRisk += o.okr.risk ? o.okr.risk : 0;
                         if (o.okr.category == "KR") {
-                            totalRisk += o.okr.risk ? o.okr.risk : 0;
                             numChildKRs = numChildKRs + 1;
                         }
                     });
                     okr.numChildKRs = numChildKRs;
-                    okr.rollupRisk = Math.round(totalRisk / numChildKRs);
+                    okr.rollupRisk = numChildKRs > 0 ? Math.round(totalRisk / (numChildKRs)) : 100;
 
                 }
                 okr.related = null; // reset related flag

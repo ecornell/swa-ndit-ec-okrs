@@ -124,7 +124,7 @@
                 {{ displayRollupRiskIcon(okr) }}
               </v-icon>
             </template>
-            <span v-if="okr['rollupRisk']"
+            <span v-if="okr['rollupRisk'] || okr['rollupRisk'] === 0"
               >Rollup Risk Score&nbsp;&nbsp;&nbsp;: {{ okr["rollupRisk"]
               }}<br />Children Total/KRs :
               {{ okr["supOKRs"] ? okr["supOKRs"].length : "" }}&nbsp;/&nbsp;{{
