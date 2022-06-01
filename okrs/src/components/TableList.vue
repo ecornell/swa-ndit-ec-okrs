@@ -33,6 +33,7 @@
         :class="classRow(okr)"
       >
         <v-col cols="1"
+        style="flex: 0 0 50px; max-width: 50px;"
           ><v-icon dense color="#135790">
             {{ relatedIcon(okr) }}
           </v-icon></v-col
@@ -58,8 +59,9 @@
               }}
             </span>
           </v-tooltip>
-
+          <span style="font-size: .95em;">
           {{ okr["category"] }} {{ okr["okrNumber"] }}
+          </span>
         </v-col>
         <v-col cols="" :class="classTitle(okr)">
           <v-tooltip
