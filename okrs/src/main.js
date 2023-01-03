@@ -3,9 +3,8 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import {
   createPinia,
-  PiniaPlugin
+  PiniaVuePlugin 
 } from 'pinia'
-import VueCompositionAPI from '@vue/composition-api'
 import {
   ApplicationInsights
 } from '@microsoft/applicationinsights-web'
@@ -24,8 +23,7 @@ global.appInsights = appInsights;
 appInsights.loadAppInsights();
 appInsights.trackPageView();
 
-Vue.use(VueCompositionAPI)
-Vue.use(PiniaPlugin)
+Vue.use(PiniaVuePlugin)
 const pinia = createPinia()
 
 Vue.config.productionTip = false

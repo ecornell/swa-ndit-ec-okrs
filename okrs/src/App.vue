@@ -199,7 +199,9 @@ export default {
 
   components: {
     Login,
+    // eslint-disable-next-line
     Details,
+    // eslint-disable-next-line
     Table,
   },
 
