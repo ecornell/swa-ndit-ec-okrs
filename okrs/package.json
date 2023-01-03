@@ -10,18 +10,18 @@
   "dependencies": {
     "@azure/msal-browser": "^2.22.0",
     "@microsoft/applicationinsights-web": "^2.7.4",
-    "@vue/composition-api": "^1.1.0",
     "core-js": "^3.6.5",
-    "pinia": "^0.5.4",
-    "vue": "^2.6.11",
+    "pinia": "^2.0.28",
+    "vue": "^2.7.14",
     "vuetify": "^2.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
-    "@vue/cli-plugin-babel": "~5.0.4",
+    "@volar-plugins/vetur": "latest",
+    "@vue/cli-plugin-babel": "~5.0.6",
     "@vue/cli-plugin-eslint": "~5.0.0",
-    "@vue/cli-service": "~5.0.4",
+    "@vue/cli-service": "~5.0.6",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
