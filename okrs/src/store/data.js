@@ -67,6 +67,7 @@ export const useDataStore = defineStore({
 
         async loadData() {
             // load cached data
+            global.App.updateSnackar("Loading cached data...");
             if (localStorage.getItem('teams')) {
                 try {
                     console.log('loading teams from local storage');
@@ -103,7 +104,7 @@ export const useDataStore = defineStore({
                 setTimeout(() => {
                     global.App.updateSnackar("Refreshing data...");
                     this.refreshData();
-                }, 5000);
+                }, 1500);
             }
         },
 

@@ -50,6 +50,18 @@
               >
                 <v-icon light> mdi-close </v-icon>
               </v-btn>
+
+              <v-btn
+                class="float-right"
+                style="margin: -8px -8px 0 0"
+                fab
+                x-small
+                color="grey"
+                icon                
+                @click="editInSharePoint"
+              >
+                <v-icon light> mdi-text-box-edit-outline </v-icon>
+              </v-btn>
             </v-col>
           </v-row>
 
@@ -142,6 +154,9 @@ export default {
       } else {
         return false;
       }
+    },
+    editInSharePoint: function () {
+      window.location = 'https://ndgov.sharepoint.com/sites/-Tm-IT-Shared-Service/Lists/OKRs/EditForm.aspx?Source=http://localhost:8080&ID='+ this.selectedOKR.id;
     },
   },
 
