@@ -156,7 +156,7 @@ export default {
       }
     },
     editInSharePoint: function () {
-      window.location = 'https://ndgov.sharepoint.com/sites/-Tm-IT-Shared-Service/Lists/OKRs/EditForm.aspx?Source=http://localhost:8080&ID='+ this.selectedOKR.id;
+      window.location = 'https://ndgov.sharepoint.com/sites/-Tm-IT-Shared-Service/Lists/OKRs/EditForm.aspx?Source=https://okrs.ndit.nd.gov/&ID='+ this.selectedOKR.id;
     },
   },
 
